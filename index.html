@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversation Visualization — Visual Reference Board</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0f1114;
+    color: #e0ddd8;
+    line-height: 1.6;
+  }
+
+  header {
+    padding: 60px 40px 40px;
+    border-bottom: 1px solid #2a2a2e;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.4rem;
+    font-weight: 400;
+    color: #f5f0e8;
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+
+  header p {
+    font-size: 0.95rem;
+    color: #8a8680;
+    max-width: 700px;
+    font-weight: 300;
+  }
+
+  nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+
+  nav a {
+    display: inline-block;
+    padding: 6px 16px;
+    border: 1px solid #3a3a3e;
+    border-radius: 20px;
+    color: #b0aca6;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+
+  nav a:hover {
+    border-color: #d4a574;
+    color: #d4a574;
+  }
+
+  .section {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 48px 40px 24px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+
+  .section h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    font-weight: 400;
+    color: #f5f0e8;
+    letter-spacing: -0.01em;
+  }
+
+  .section-number {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #d4a574;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .section-desc {
+    font-size: 0.88rem;
+    color: #7a7670;
+    margin-bottom: 32px;
+    max-width: 600px;
+    font-weight: 300;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 24px;
+    margin-bottom: 16px;
+  }
+
+  .grid-wide {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    background: #1a1b1f;
+    border: 1px solid #2a2a2e;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .card:hover {
+    border-color: #4a4a4e;
+  }
+
+  .card-img {
+    width: 100%;
+    aspect-ratio: 16/10;
+    object-fit: cover;
+    display: block;
+    background: #111;
+  }
+
+  .card-img-tall {
+    aspect-ratio: auto;
+    max-height: 600px;
+    object-fit: contain;
+    background: #111;
+  }
+
+  .card-body {
+    padding: 20px;
+  }
+
+  .card-body h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: #f5f0e8;
+    margin-bottom: 6px;
+  }
+
+  .card-body .tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #d4a574;
+    margin-bottom: 8px;
+  }
+
+  .card-body p {
+    font-size: 0.85rem;
+    color: #8a8680;
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  .card-body a {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 0.78rem;
+    color: #d4a574;
+    text-decoration: none;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .card-body a:hover {
+    text-decoration: underline;
+  }
+
+  .divider {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+
+  .divider hr {
+    border: none;
+    border-top: 1px solid #2a2a2e;
+  }
+
+  .gap-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 0.85rem;
+  }
+
+  .gap-table th {
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 2px solid #3a3a3e;
+    color: #d4a574;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .gap-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #2a2a2e;
+    color: #b0aca6;
+    font-weight: 300;
+    vertical-align: top;
+  }
+
+  .gap-table tr:hover td {
+    background: #1a1b1f;
+  }
+
+  .gap-table .layer-name {
+    color: #f5f0e8;
+    font-weight: 500;
+  }
+
+  .gap-table .missing {
+    color: #d4a574;
+    font-style: italic;
+  }
+
+  footer {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px;
+    text-align: center;
+    color: #5a5650;
+    font-size: 0.78rem;
+    font-weight: 300;
+    border-top: 1px solid #2a2a2e;
+    margin-top: 40px;
+  }
+
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: 1fr; }
+    header { padding: 40px 20px 30px; }
+    .section { padding: 32px 20px 16px; }
+    header h1 { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Making Thinking Visible</h1>
+  <p>A visual reference board for the Knowmium conversation visualization project. Every creator, tool, lab, and concept from the research — visible at a glance.</p>
+  <nav>
+    <a href="#your-vision">Your Vision</a>
+    <a href="#language-as-form">Language as Form</a>
+    <a href="#editorial-viz">Editorial Viz</a>
+    <a href="#tools-for-thought">Tools for Thought</a>
+    <a href="#labs">Labs &amp; Research</a>
+    <a href="#live-tools">Live Tools</a>
+    <a href="#voice-as-material">Voice as Material</a>
+    <a href="#signals">12 Signals</a>
+    <a href="#the-gap">The Gap</a>
+  </nav>
+</header>
+
+<!-- YOUR VISION -->
+<div class="section" id="your-vision">
+  <div class="section-header">
+    <span class="section-number">00</span>
+    <h2>Your Vision</h2>
+  </div>
+  <p class="section-desc">The interface concepts you've already developed — the Dialogue Cartographer, Emotional Grammar Map, Dynamic Argument Flow, and Cognitive Resonance Waveform.</p>
+  <div class="grid grid-wide">
+    <div class="card">
+      <img src="images/joshua_interface_01.jpg" alt="Dialogue Mapping Unit 01-04" class="card-img" style="aspect-ratio:auto; object-fit:contain;">
+      <div class="card-body">
+        <span class="tag">Knowmium Concept</span>
+        <h3>Interface: Dialogue Mapping Unit 01–04</h3>
+        <p>Four interface concepts: The Dialogue Cartographer (spoken text with cognitive subtext map), Emotional Grammar Map (conversation resonance), Dynamic Argument Flow (switchable argument/subtext layers with honesty slider), and Cognitive Resonance Waveform (turbulent cognitive resonance for subtext mismatch).</p>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/joshua_interface_02.png" alt="10 Conversation Interface Concepts" class="card-img card-img-tall">
+      <div class="card-body">
+        <span class="tag">Knowmium Concept</span>
+        <h3>10 Conversation Interface Concepts</h3>
+        <p>Conversation Cartography, Dialogue Stream Timeline, Persuasion Gravity Map, Idea Constellation Explorer, Emotional Weather Radar, Subtext &amp; Intent Layer, Influence Flow Diagram, Conversation Terrain Map, Dialogue Pulse Monitor, and Conversation Replay Mode.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"><hr></div>
+
+<!-- LANGUAGE AS FORM -->
+<div class="section" id="language-as-form">
+  <div class="section-header">
+    <span class="section-number">01</span>
+    <h2>Language and Dialogue as Visual Form</h2>
+  </div>
+  <p class="section-desc">Creators who transform language, text, and conversation into visual experiences. The most directly relevant precedents for your work.</p>
+  <div class="grid">
+    <div class="card">
+      <img src="images/posavec_literary_organism.jpg" alt="Stefanie Posavec Literary Organism" class="card-img">
+      <div class="card-body">
+        <span class="tag">Language Visualization</span>
+        <h3>Stefanie Posavec — Writing Without Words</h3>
+        <p>Visualized Jack Kerouac's prose as organic, tree-like branching structures. Maps sentence length, rhythm, and word choice into color and form. Treats text as a dataset and finds its hidden geometry.</p>
+        <a href="https://www.stefanieposavec.com/archive/writing-without-words" target="_blank">View Project &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/posavec_sentence_drawings.jpg" alt="Stefanie Posavec Sentence Drawings" class="card-img">
+      <div class="card-body">
+        <span class="tag">Language Visualization</span>
+        <h3>Stefanie Posavec — Sentence Drawings</h3>
+        <p>Each sentence becomes a visual path, with branches and colors encoding parts of speech, themes, and rhythm. The closest existing precedent for turning language itself into a visual object.</p>
+        <a href="https://www.stefanieposavec.com/" target="_blank">View Portfolio &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/shirley_wu_hamilton.png" alt="Shirley Wu Hamilton Visualization" class="card-img">
+      <div class="card-body">
+        <span class="tag">Dialogue Visualization</span>
+        <h3>Shirley Wu — Every Line in Hamilton</h3>
+        <p>Mapped every single line of dialogue in Hamilton by character, theme, and conversation flow. A landmark in dialogue visualization: interactive, beautiful, and built on real conversation data.</p>
+        <a href="https://pudding.cool/2017/03/hamilton/" target="_blank">View Project &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/poet_engineer.webp" alt="The Poet Engineer" class="card-img">
+      <div class="card-body">
+        <span class="tag">Creative Technology</span>
+        <h3>The Poet Engineer — TouchDesigner Interfaces</h3>
+        <p>Hand-drawn sketches transformed into real-time interactive visual interfaces using TouchDesigner. Cockpit aesthetic with glowing elements on dark backgrounds. The aesthetic inspiration for your project.</p>
+        <a href="https://www.instagram.com/the.poet.engineer/" target="_blank">View on Instagram &rarr;</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"><hr></div>
+
+<!-- EDITORIAL VIZ -->
+<div class="section" id="editorial-viz">
+  <div class="section-header">
+    <span class="section-number">02</span>
+    <h2>Data Visualization with Editorial Sensibility</h2>
+  </div>
+  <p class="section-desc">Creators who share the Wes Anderson / Monocle Magazine aesthetic: warm, precise, information-dense, and beautiful.</p>
+  <div class="grid">
+    <div class="card">
+      <img src="images/giorgia_lupi_dear_data.jpeg" alt="Giorgia Lupi Dear Data" class="card-img">
+      <div class="card-body">
+        <span class="tag">Data Humanism</span>
+        <h3>Giorgia Lupi — Dear Data</h3>
+        <p>A year-long project of hand-drawn data postcards. Coined "Data Humanism." Proves data visualization can be warm, personal, and hand-crafted. The closest aesthetic precedent for your Wes Anderson tone.</p>
+        <a href="https://www.dear-data.com/" target="_blank">View Project &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/nadieh_bremer.png" alt="Nadieh Bremer Visual Cinnamon" class="card-img">
+      <div class="card-body">
+        <span class="tag">Data Art</span>
+        <h3>Nadieh Bremer — Visual Cinnamon</h3>
+        <p>Award-winning creative data visualizations. Published "Chart Art" (2025). Her radial and organic forms demonstrate that complex data can be rendered with extraordinary beauty.</p>
+        <a href="https://www.visualcinnamon.com/" target="_blank">View Portfolio &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/nicholas_felton.jpg" alt="Nicholas Felton Annual Report" class="card-img">
+      <div class="card-body">
+        <span class="tag">Editorial Data Design</span>
+        <h3>Nicholas Felton — Feltron Annual Reports</h3>
+        <p>Personal data as editorial design. Pioneered the "quantified self" as a design object. The gold standard for data-as-editorial-design. The Monocle Magazine of data visualization.</p>
+        <a href="http://feltron.com/" target="_blank">View Archive &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/moritz_stefaner.jpg" alt="Moritz Stefaner" class="card-img">
+      <div class="card-body">
+        <span class="tag">Information Aesthetics</span>
+        <h3>Moritz Stefaner — Truth &amp; Beauty</h3>
+        <p>Independent data viz designer. Co-host of Data Stories podcast (170+ episodes). Explicitly bridges the gap between analytical rigor and visual beauty — the balance your project requires.</p>
+        <a href="https://truth-and-beauty.net/" target="_blank">View Portfolio &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/the_pudding.png" alt="The Pudding" class="card-img">
+      <div class="card-body">
+        <span class="tag">Visual Essays</span>
+        <h3>The Pudding — Visual Essay Studio</h3>
+        <p>Sophisticated, interactive data storytelling on the web. Demonstrates how complex analysis can be made accessible and engaging through interactive visual narrative.</p>
+        <a href="https://pudding.cool/" target="_blank">View Essays &rarr;</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"><hr></div>
+
+<!-- TOOLS FOR THOUGHT -->
+<div class="section" id="tools-for-thought">
+  <div class="section-header">
+    <span class="section-number">03</span>
+    <h2>Tools for Thought</h2>
+  </div>
+  <p class="section-desc">Creators building the conceptual and technical infrastructure for making thinking visible through interactive media.</p>
+  <div class="grid">
+    <div class="card">
+      <img src="images/bret_victor_dynamicland.png" alt="Bret Victor Dynamicland" class="card-img">
+      <div class="card-body">
+        <span class="tag">Interactive Media</span>
+        <h3>Bret Victor — Dynamicland</h3>
+        <p>Pioneer of explorable explanations and interactive, dynamic media for understanding complex systems. The intellectual godfather of "seeing the whole system." His ideas about making thinking visible are foundational.</p>
+        <a href="http://worrydream.com/ExplorableExplanations/" target="_blank">View Essay &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/nicky_case_trust.jpg" alt="Nicky Case Evolution of Trust" class="card-img">
+      <div class="card-body">
+        <span class="tag">Explorable Explanations</span>
+        <h3>Nicky Case — The Evolution of Trust</h3>
+        <p>Interactive simulations of trust, cooperation, and social dynamics. The closest thing to "playable conversation theory." Also created Nutshell, a tool for expandable explanations.</p>
+        <a href="https://ncase.me/trust/" target="_blank">Play It &rarr;</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"><hr></div>
+
+<!-- LABS -->
+<div class="section" id="labs">
+  <div class="section-header">
+    <span class="section-number">04</span>
+    <h2>Labs &amp; Academic Research</h2>
+  </div>
+  <p class="section-desc">The research institutions actively building the science and technology of conversation visualization.</p>
+  <div class="grid">
+    <div class="card">
+      <img src="images/mit_ccc.png" alt="MIT CCC" class="card-img">
+      <div class="card-body">
+        <span class="tag">Research Lab</span>
+        <h3>MIT Center for Constructive Communication</h3>
+        <p>Led by Deb Roy. The single most relevant research lab for your project. Their Anthology project transforms conversations into interactive maps. Conversation Flowers visualizes conversation health dynamics.</p>
+        <a href="https://www.ccc.mit.edu/" target="_blank">View Lab &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/meetmap.jpeg" alt="MeetMap" class="card-img">
+      <div class="card-body">
+        <span class="tag">CHI 2025</span>
+        <h3>MeetMap — Real-Time Dialogue Mapping</h3>
+        <p>University of Michigan. LLM-powered real-time dialogue mapping during meetings. AI generates summary nodes from speech; users arrange them into maps. Users said it "aligned better with their mental models of conversations."</p>
+        <a href="https://arxiv.org/html/2502.01564v1" target="_blank">Read Paper &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/hume_ai.webp" alt="Hume AI" class="card-img">
+      <div class="card-body">
+        <span class="tag">Emotion Technology</span>
+        <h3>Hume AI — Empathic Voice Interface</h3>
+        <p>Real-time emotion detection from voice prosody. Measures nuanced vocal modulations across dozens of emotional dimensions. The technology for emotional subtext detection exists — the beautiful visual interface does not.</p>
+        <a href="https://www.hume.ai/" target="_blank">View Demo &rarr;</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"><hr></div>
+
+<!-- LIVE TOOLS -->
+<div class="section" id="live-tools">
+  <div class="section-header">
+    <span class="section-number">05</span>
+    <h2>Live Tools &amp; Demos</h2>
+  </div>
+  <p class="section-desc">Real tools you can examine today. Each represents a piece of the puzzle you are assembling.</p>
+  <div class="grid">
+    <div class="card">
+      <img src="images/debargvis.webp" alt="DebArgVis" class="card-img">
+      <div class="card-body">
+        <span class="tag">Argument Visualization</span>
+        <h3>DebArgVis — Debate Argument Visualization</h3>
+        <p>Interactive D3.js tool for visualizing argumentative dynamics in debate. Speaker timeline, argument relations, word clouds per speaker, transcript linked to visual nodes. Open source.</p>
+        <a href="https://zlatakikteva.github.io/DebArgVis-Demo/" target="_blank">Try Live Demo &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/novus_opus.png" alt="Novus Opus Polarity" class="card-img">
+      <div class="card-body">
+        <span class="tag">Belief Simulation</span>
+        <h3>Novus Opus — Opinion Dynamics Simulator</h3>
+        <p>Interactive web-based simulator for exploring opinion dynamics and polarization. Agents in belief space, similarity matrix, polarization chart, AI narrative synthesis. Parameters: trust barrier, intolerance trigger, persuadability.</p>
+        <a href="https://www.novusopus.org/research/opinion-dynamics" target="_blank">Try Simulator &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/read_ai.jpg" alt="Read.ai" class="card-img">
+      <div class="card-body">
+        <span class="tag">Meeting Analytics</span>
+        <h3>Read.ai — Conversation Power Dynamics</h3>
+        <p>Meeting analytics tracking talk time, speaking pace, camera presence, sentiment, and engagement. Makes power dynamics visible through concrete metrics and visualizations.</p>
+        <a href="https://www.read.ai/" target="_blank">View Tool &rarr;</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"><hr></div>
+
+<!-- VOICE AS MATERIAL -->
+<div class="section" id="voice-as-material">
+  <div class="section-header">
+    <span class="section-number">06</span>
+    <h2>Voice &amp; Speech as Visual Material</h2>
+  </div>
+  <p class="section-desc">Artists and installations that transform voice, speech, and conversation into physical and visual form.</p>
+  <div class="grid">
+    <div class="card">
+      <img src="images/golan_levin_messa.jpg" alt="Golan Levin Messa di Voce" class="card-img">
+      <div class="card-body">
+        <span class="tag">Voice Visualization</span>
+        <h3>Golan Levin — Messa di Voce</h3>
+        <p>A performance where voice is transformed into dynamic visual form in real-time augmented reality. The pioneer of making voice visible — proving speech can become a rich, expressive visual medium.</p>
+        <a href="http://www.flong.com/archive/projects/messa/index.html" target="_blank">View Project &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/listening_post.jpg" alt="The Listening Post" class="card-img">
+      <div class="card-body">
+        <span class="tag">Art Installation</span>
+        <h3>Hansen &amp; Rubin — The Listening Post</h3>
+        <p>Art installation culling text from chat rooms in real-time, displayed on a curved grid of small screens with voice synthesis. Conversation as ambient, spatial experience.</p>
+        <a href="http://www.parallel.nyc/listening-post" target="_blank">View Project &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/lozano_hemmer.jpeg" alt="Rafael Lozano-Hemmer" class="card-img">
+      <div class="card-body">
+        <span class="tag">Art Installation</span>
+        <h3>Rafael Lozano-Hemmer — Whispers</h3>
+        <p>Whispered messages recorded and transformed into ripples on a water basin. Speech becomes physical form. One of many installations exploring voice as sculptural material.</p>
+        <a href="https://www.lozano-hemmer.com/" target="_blank">View Portfolio &rarr;</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"><hr></div>
+
+<!-- 12 MEASURABLE SIGNALS -->
+<div class="section" id="signals">
+  <div class="section-header">
+    <span class="section-number">07</span>
+    <h2>12 Measurable Conversation Signals</h2>
+  </div>
+  <p class="section-desc">Signals extractable directly from audio and speech patterns. Each one has existing research or tools — but none have been unified into a single beautiful interface. Yet.</p>
+  <div class="grid">
+    <div class="card">
+      <img src="images/signal_turn_taking.webp" alt="Turn-Taking Balance" class="card-img">
+      <div class="card-body">
+        <span class="tag">Signal 01 — Turn-Taking Balance</span>
+        <h3>Conversation Clock — UC Santa Cruz</h3>
+        <p>Visualizes conversation as concentric circles. Width of segments = speaker volume, color = speaker identity. Inner circles show conversation history, outer circle shows present. At-a-glance understanding of who spoke, for how long, and how loudly.</p>
+        <a href="https://dl.acm.org/doi/fullHtml/10.1145/3491101.3519879" target="_blank">Read Paper &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/signal_backchannel.gif" alt="Visual Backchannel" class="card-img">
+      <div class="card-body">
+        <span class="tag">Signal 02 — Backchanneling</span>
+        <h3>Visual Backchannel — Marian D&ouml;rk et al.</h3>
+        <p>An evolving, interactive visual overview of large-scale ongoing conversations. Moves beyond a simple list of updates to show how discussion evolves over time, summarizing main facets and providing exploratory interactivity.</p>
+        <a href="https://mariandoerk.de/visualbackchannel/" target="_blank">View Project &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/signal_speech_sync.png" alt="Speech Synchronization" class="card-img">
+      <div class="card-body">
+        <span class="tag">Signal 03 — Speaking Rate Sync</span>
+        <h3>Assaneo et al. — Neural Speech Synchronization</h3>
+        <p>Plots phase-locking value between speech envelope and brain signals over time. 3D brain visualizations highlight cortical regions where synchronization occurs. Speech rhythm alignment correlates with trust.</p>
+        <a href="https://www.nature.com/articles/s41593-019-0353-z" target="_blank">Read Paper &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/signal_pitch.png" alt="Vocal Pitch Convergence" class="card-img">
+      <div class="card-body">
+        <span class="tag">Signal 04 — Vocal Pitch Convergence</span>
+        <h3>Gorisch, Wells &amp; Brown — Pitch Alignment</h3>
+        <p>Plots pitch contours of two speakers on a graph. Degree of similarity or divergence over time provides a visual representation of interactional alignment. Also visualizable with Praat speech analysis.</p>
+        <a href="https://journals.sagepub.com/doi/abs/10.1177/0023830911428874" target="_blank">Read Paper &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/signal_latency.webp" alt="Chat Circles" class="card-img">
+      <div class="card-body">
+        <span class="tag">Signal 05 — Turn Latency</span>
+        <h3>Chat Circles — MIT Media Lab</h3>
+        <p>Each participant is a colored circle that grows and brightens when they speak, fades during silence. Provides a real-time visual record of turn-taking, pauses, and conversational flow. A landmark in conversation visualization.</p>
+        <a href="https://smg.media.mit.edu/papers/VisualConv/VisualizeConv.pdf" target="_blank">Read Paper &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/signal_prosody.webp" alt="Hume AI Emotional Prosody" class="card-img">
+      <div class="card-body">
+        <span class="tag">Signal 06 — Emotional Prosody</span>
+        <h3>Hume AI — Empathic Voice Interface</h3>
+        <p>Analyzes speech prosody (rhythm, stress, intonation) for emotional undertones. Time-stamped log of detected emotions with confidence scores. The technology for emotional subtext detection exists — the beautiful interface does not.</p>
+        <a href="https://www.hume.ai/expression-measurement" target="_blank">Try Demo &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/signal_interruption.webp" alt="Conversation Clock Interruptions" class="card-img">
+      <div class="card-body">
+        <span class="tag">Signal 07 — Interruption Patterns</span>
+        <h3>Conversation Clock — Bergstrom &amp; Karahalios</h3>
+        <p>Circular format where each speaker is a color, speaking turns are arcs. Overlapping arcs indicate interruptions or simultaneous speech. Distinguishes supportive overlap (enthusiasm) from competitive overlap (dominance).</p>
+        <a href="https://www.researchgate.net/figure/The-Conversation-Clock-provides-a-visual-history-of-interaction-and-communication-Each_fig2_221179350" target="_blank">View Research &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/signal_question.png" alt="Gong Question Tracking" class="card-img">
+      <div class="card-body">
+        <span class="tag">Signal 08 — Question Density</span>
+        <h3>Gong.io — Conversation Intelligence</h3>
+        <p>Tracks conversational patterns including question-asking behavior over time. Initiative Tracking uses line graphs to monitor adoption of specific patterns. High question density correlates with curiosity and persuasion effectiveness.</p>
+        <a href="https://www.gong.io/" target="_blank">View Tool &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/signal_lexical.png" alt="Lexical Alignment" class="card-img">
+      <div class="card-body">
+        <span class="tag">Signal 09 — Lexical Alignment</span>
+        <h3>VisualLIHLA — Lexical Alignment Tool</h3>
+        <p>Highlights aligned words and phrases between source and target texts using color coding. Provides immediate visual representation of lexical convergence — when speakers begin using the same words, signaling shared understanding.</p>
+        <a href="https://www.icmc.usp.br/~taspardo/til2008-caselietal.pdf" target="_blank">Read Paper &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/signal_topic_shift.jpg" alt="Topic Shift Visualization" class="card-img">
+      <div class="card-body">
+        <span class="tag">Signal 10 — Topic Shift Detection</span>
+        <h3>University of Konstanz — Graph-Based Topic Shifts</h3>
+        <p>Graph-based approach showing topic shifts over time. Terms arranged in a circle, pulled toward time periods they appear in. Distance from center indicates time gap. Color distinguishes eras. Gradual vs. abrupt shifts reveal avoidance or reframing.</p>
+        <a href="http://informationandvisualization.de/blog/graphbased-visualization-topic-shifts" target="_blank">View Project &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/signal_dominance.webp" alt="Conversational Dominance Network" class="card-img">
+      <div class="card-body">
+        <span class="tag">Signal 11 — Conversational Dominance</span>
+        <h3>Gephi Network Graphs — Speaker Centrality</h3>
+        <p>Network graph using centrality algorithms. Each node = a person, connections show who references whom. The more referenced, the more central and influential. Makes power dynamics and influence hierarchies immediately visible.</p>
+        <a href="https://www.christopherspenn.com/2018/03/social-influence-network-graphs-improve-social-media-marketing/" target="_blank">View Example &rarr;</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="images/signal_momentum.webp" alt="Conversational Momentum" class="card-img">
+      <div class="card-body">
+        <span class="tag">Signal 12 — Conversational Momentum</span>
+        <h3>Momentum.io &amp; Empathy.co — Interaction Energy</h3>
+        <p>Dashboards tracking conversation energy: response speed, pitch changes, turn length compression. Momentum rises when responses become faster and pitch increases; drops when pauses increase and engagement fades.</p>
+        <a href="https://docs.momentum.io/conversation-intelligence-overview" target="_blank">View Tool &rarr;</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"><hr></div>
+
+<!-- THE GAP -->
+<div class="section" id="the-gap">
+  <div class="section-header">
+    <span class="section-number">08</span>
+    <h2>The Gap — What Nobody Is Building</h2>
+  </div>
+  <p class="section-desc">Each layer of your vision mapped against the current state of the art. The components exist in isolation. The integration is the frontier.</p>
+
+  <table class="gap-table">
+    <thead>
+      <tr>
+        <th>Layer</th>
+        <th>What You Want to Visualize</th>
+        <th>Who's Working on It</th>
+        <th>What's Missing</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="layer-name">Surface Dialogue</td>
+        <td>What people are saying</td>
+        <td>DebArgVis, MeetMap, ClassInSight</td>
+        <td class="missing">Tools exist but are utilitarian, not beautiful</td>
+      </tr>
+      <tr>
+        <td class="layer-name">Cognitive Subtext</td>
+        <td>What people are thinking</td>
+        <td>ToxVis, MVis4LD, Gaslighting Check</td>
+        <td class="missing">Detection exists; visual interface does not</td>
+      </tr>
+      <tr>
+        <td class="layer-name">Emotional Weather</td>
+        <td>The emotional undercurrent</td>
+        <td>Hume AI, MIT Affective Computing</td>
+        <td class="missing">Technology exists; nobody is visualizing it beautifully</td>
+      </tr>
+      <tr>
+        <td class="layer-name">Persuasion Dynamics</td>
+        <td>How arguments move and land</td>
+        <td>Cornell persuasion research, Novus Opus</td>
+        <td class="missing">Academic models exist; no visual interface</td>
+      </tr>
+      <tr>
+        <td class="layer-name">Power &amp; Influence</td>
+        <td>Who is dominating, who is yielding</td>
+        <td>Read.ai, GroupMeter</td>
+        <td class="missing">Metrics exist; no integrated visual layer</td>
+      </tr>
+      <tr>
+        <td class="layer-name">Belief Change</td>
+        <td>How minds actually change</td>
+        <td>Novus Opus Polarity, Bayesian viz research</td>
+        <td class="missing">Simulations exist; no connection to real dialogue</td>
+      </tr>
+      <tr>
+        <td class="layer-name">Counterfactual Paths</td>
+        <td>What could have been said differently</td>
+        <td>Emerging research only</td>
+        <td class="missing">Nobody is building this yet</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<footer>
+  Knowmium — Conversation Visualization Research &middot; March 2026 &middot; Compiled by Manus AI
+</footer>
+
+</body>
+</html>
