@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversation Visualizer — The Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F2EDE0;
+  --bg-panel: #EDE7D8;
+  --bg-dark: #0F0E0B;
+  --bg-dark2: #1A1814;
+  --yellow: #F5C800;
+  --blue: #2B5BA8;
+  --blue-light: #4A7BC4;
+  --blue-faint: rgba(43,91,168,0.08);
+  --black: #0D0D0B;
+  --gray: #6B6459;
+  --gray-light: #B8B0A0;
+  --cream: #F8F4EA;
+  --border: rgba(13,13,11,0.12);
+  --border-dark: rgba(248,244,234,0.15);
+  --serif: 'Playfair Display', Georgia, serif;
+  --fell: 'IM Fell English', Georgia, serif;
+  --sans: 'Inter', system-ui, sans-serif;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--black);
+  font-family: var(--sans);
+  font-size: 13px;
+  overflow: hidden;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  height: 36px;
+  border-bottom: 1px solid var(--black);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 0;
+  position: relative;
+  z-index: 100;
+  background: var(--bg);
+}
+.topbar-logo {
+  font-family: var(--serif);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding-right: 16px;
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+}
+.topbar-logo em {
+  font-style: italic;
+  font-weight: 400;
+}
+.topbar-session {
+  padding: 0 16px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
+}
+.topbar-session-name {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.topbar-session-meta {
+  font-size: 10px;
+  color: var(--gray);
+  font-weight: 300;
+  display: flex;
+  gap: 10px;
+}
+.topbar-session-meta span::before {
+  content: '·';
+  margin-right: 10px;
+  color: var(--gray-light);
+}
+.topbar-nav {
+  margin-left: auto;
+  display: flex;
+  height: 100%;
+}
+.topbar-nav-btn {
+  height: 100%;
+  padding: 0 14px;
+  border: none;
+  background: none;
+  border-left: 1px solid var(--border);
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gray);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.topbar-nav-btn:hover { background: rgba(245,200,0,0.1); color: var(--black); }
+.topbar-nav-btn.active { background: var(--yellow); color: var(--black); }
+
+/* ── MAIN LAYOUT ── */
+.main {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  height: calc(100vh - 36px - 32px);
+  border-bottom: 1px solid var(--black);
+}
+
+/* ── LEFT: TRANSCRIPT ── */
+.transcript-panel {
+  border-right: 1px solid var(--black);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.transcript-header {
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.transcript-header-title {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gray);
+}
+.transcript-header-meta {
+  font-size: 9px;
+  color: var(--gray-light);
+  font-weight: 300;
+}
+/* Timeline ruler */
+.timeline-ruler {
+  height: 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-end;
+  padding: 0 20px 0 52px;
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.ruler-track {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  position: relative;
+  margin-bottom: 6px;
+}
+.ruler-tick {
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  background: var(--gray-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.ruler-tick-label {
+  position: absolute;
+  bottom: 4px;
+  font-size: 7px;
+  color: var(--gray-light);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+/* Pivotal moment markers on ruler */
+.ruler-marker {
+  position: absolute;
+  bottom: 0;
+  width: 2px;
+  height: 8px;
+  background: var(--yellow);
+}
+
+.transcript-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+.transcript-scroll::-webkit-scrollbar { width: 3px; }
+.transcript-scroll::-webkit-scrollbar-track { background: transparent; }
+.transcript-scroll::-webkit-scrollbar-thumb { background: var(--gray-light); }
+
+/* Turn */
+.turn {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.12s;
+  position: relative;
+}
+.turn:hover { background: rgba(245,200,0,0.04); }
+.turn.expanded { background: transparent; }
+
+.turn-gutter {
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 14px;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.turn-timestamp {
+  font-size: 7px;
+  color: var(--gray-light);
+  font-weight: 400;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  letter-spacing: 0.06em;
+}
+.turn-pivot-dot {
+  width: 5px;
+  height: 5px;
+  background: var(--yellow);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.turn-body {
+  padding: 12px 16px;
+}
+.turn-speaker {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.turn-speaker-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.turn-text {
+  font-family: var(--fell);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--black);
+}
+.turn-text em { font-style: italic; }
+
+/* Pivotal badge */
+.pivot-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--yellow);
+  padding: 2px 7px 2px 5px;
+  margin-top: 8px;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--black);
+}
+.pivot-badge::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  background: var(--black);
+}
+
+/* Expand layer — the "underneath" */
+.expand-layer {
+  display: none;
+  background: var(--bg-dark);
+  border-top: 1px solid rgba(245,200,0,0.3);
+  border-bottom: 1px solid rgba(245,200,0,0.3);
+}
+.expand-layer.open { display: block; }
+
+.expand-inner {
+  padding: 16px 20px 16px 52px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: rgba(248,244,234,0.06);
+}
+.expand-cell {
+  padding: 12px 14px;
+  background: var(--bg-dark);
+}
+.expand-cell-full {
+  grid-column: 1 / -1;
+  padding: 12px 14px;
+  background: var(--bg-dark);
+  border-top: 1px solid rgba(248,244,234,0.06);
+}
+.expand-label {
+  font-size: 7px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gray-light);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.expand-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(248,244,234,0.08);
+}
+.expand-value {
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cream);
+  line-height: 1.3;
+}
+.expand-value-small {
+  font-size: 10px;
+  font-weight: 300;
+  color: var(--gray-light);
+  line-height: 1.5;
+  margin-top: 4px;
+  font-family: var(--sans);
+}
+.expand-metric {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 6px;
+}
+.expand-metric-num {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--yellow);
+  line-height: 1;
+}
+.expand-metric-unit {
+  font-size: 8px;
+  color: var(--gray-light);
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.expand-bar-track {
+  height: 2px;
+  background: rgba(248,244,234,0.1);
+  margin-top: 8px;
+  position: relative;
+}
+.expand-bar-fill {
+  height: 100%;
+  background: var(--yellow);
+  transition: width 0.4s ease;
+}
+.expand-quote {
+  font-family: var(--fell);
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--cream);
+  padding-left: 12px;
+  border-left: 2px solid var(--yellow);
+}
+
+/* Blue line art SVG icons in expand */
+.expand-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 8px;
+  opacity: 0.7;
+}
+
+/* ── RIGHT: PIVOTAL MOMENTS ── */
+.moments-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-panel);
+}
+.moments-header {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.moments-header-title {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gray);
+}
+.moments-header-meta {
+  font-size: 9px;
+  color: var(--gray-light);
+  font-weight: 300;
+  margin-left: auto;
+}
+
+/* Icon grid */
+.moments-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--black);
+  border-bottom: 1px solid var(--black);
+  flex-shrink: 0;
+}
+.moment-tile {
+  background: var(--bg-panel);
+  padding: 14px 14px 12px;
+  cursor: pointer;
+  transition: background 0.12s;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  border: none;
+  text-align: left;
+}
+.moment-tile:hover { background: rgba(245,200,0,0.08); }
+.moment-tile.active {
+  background: var(--bg-dark);
+}
+.moment-tile.active .tile-label { color: var(--gray-light); }
+.moment-tile.active .tile-name { color: var(--cream); }
+.moment-tile.active .tile-count { color: var(--yellow); }
+
+/* Blue line SVG icon */
+.tile-icon {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 2px;
+}
+.tile-label {
+  font-size: 7px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gray);
+}
+.tile-name {
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--black);
+  line-height: 1.2;
+}
+.tile-count {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--black);
+  line-height: 1;
+  margin-top: auto;
+}
+.tile-active-arrow {
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  font-size: 10px;
+  color: var(--yellow);
+  display: none;
+}
+.moment-tile.active .tile-active-arrow { display: block; }
+
+/* Detail drawer */
+.moments-detail {
+  flex: 1;
+  overflow-y: auto;
+  display: none;
+}
+.moments-detail.open { display: block; }
+.moments-detail::-webkit-scrollbar { width: 2px; }
+.moments-detail::-webkit-scrollbar-thumb { background: var(--gray-light); }
+
+.detail-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: var(--bg-panel);
+  z-index: 10;
+}
+.detail-title {
+  font-family: var(--serif);
+  font-size: 14px;
+  font-weight: 700;
+}
+.detail-count {
+  font-size: 9px;
+  color: var(--gray);
+  font-weight: 300;
+}
+.detail-close {
+  background: none;
+  border: 1px solid var(--border);
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray);
+}
+.detail-close:hover { background: var(--yellow); color: var(--black); border-color: var(--yellow); }
+
+.detail-instance {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-instance-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.detail-timestamp {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--yellow);
+  background: var(--black);
+  padding: 2px 6px;
+  font-family: var(--sans);
+}
+.detail-turn-num {
+  font-size: 8px;
+  color: var(--gray-light);
+  font-weight: 300;
+}
+.detail-quote {
+  font-family: var(--fell);
+  font-style: italic;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--black);
+  margin-bottom: 6px;
+  padding-left: 10px;
+  border-left: 1px solid var(--yellow);
+}
+.detail-note {
+  font-size: 10px;
+  color: var(--gray);
+  line-height: 1.5;
+  font-weight: 300;
+}
+
+/* Moments empty state */
+.moments-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  gap: 12px;
+}
+.moments-empty-text {
+  font-size: 11px;
+  color: var(--gray-light);
+  text-align: center;
+  line-height: 1.5;
+  font-weight: 300;
+}
+
+/* ── BOTTOM BAR ── */
+.bottombar {
+  height: 32px;
+  border-top: 1px solid var(--black);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 0;
+  background: var(--bg-dark);
+}
+.bottombar-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 0 16px;
+  border-right: 1px solid rgba(248,244,234,0.1);
+  height: 100%;
+  align-items: center;
+}
+.bottombar-stat:first-child { padding-left: 0; }
+.bottombar-num {
+  font-family: var(--serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cream);
+}
+.bottombar-label {
+  font-size: 7px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gray);
+}
+.bottombar-health {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 16px;
+}
+.bottombar-health-label {
+  font-size: 7px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gray);
+}
+.health-track {
+  width: 80px;
+  height: 2px;
+  background: rgba(248,244,234,0.1);
+  position: relative;
+}
+.health-fill {
+  height: 100%;
+  background: var(--yellow);
+  width: 82%;
+}
+.health-num {
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--yellow);
+}
+.bottombar-variation {
+  padding: 0 16px;
+  border-left: 1px solid rgba(248,244,234,0.1);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray);
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+.var-nav {
+  display: flex;
+  height: 100%;
+  border-left: 1px solid rgba(248,244,234,0.1);
+}
+.var-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 100%;
+  border-right: 1px solid rgba(248,244,234,0.1);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--gray);
+  text-decoration: none;
+  transition: background 0.12s, color 0.12s;
+}
+.var-nav a:hover { background: rgba(245,200,0,0.15); color: var(--cream); }
+.var-nav a.active { background: var(--yellow); color: var(--black); }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">Conversation <em>Map</em></div>
+  <div class="topbar-session">
+    <div class="topbar-session-name">Session 047</div>
+    <div class="topbar-session-meta">
+      <span>Sarah Chen &amp; Marcus Webb</span>
+      <span>14 Mar 2026</span>
+      <span>38 min</span>
+    </div>
+  </div>
+  <div class="topbar-nav">
+    <button class="topbar-nav-btn active">Debrief</button>
+    <button class="topbar-nav-btn">Map</button>
+    <button class="topbar-nav-btn">Timeline</button>
+    <button class="topbar-nav-btn">Patterns</button>
+    <button class="topbar-nav-btn">Export</button>
+    <button class="topbar-nav-btn">Share</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT: TRANSCRIPT -->
+  <div class="transcript-panel">
+    <div class="transcript-header">
+      <div class="transcript-header-title">Transcript</div>
+      <div class="transcript-header-meta">47 turns &nbsp;·&nbsp; 12 pivotal moments &nbsp;·&nbsp; click any turn to expand</div>
+    </div>
+
+    <!-- Timeline ruler -->
+    <div class="timeline-ruler">
+      <div class="ruler-track">
+        <!-- Tick marks at 5-min intervals -->
+        <div class="ruler-tick" style="left:0%; height:10px"><div class="ruler-tick-label">0:00</div></div>
+        <div class="ruler-tick" style="left:13.2%; height:6px"><div class="ruler-tick-label">5:00</div></div>
+        <div class="ruler-tick" style="left:26.3%; height:6px"><div class="ruler-tick-label">10:00</div></div>
+        <div class="ruler-tick" style="left:39.5%; height:6px"><div class="ruler-tick-label">15:00</div></div>
+        <div class="ruler-tick" style="left:52.6%; height:6px"><div class="ruler-tick-label">20:00</div></div>
+        <div class="ruler-tick" style="left:65.8%; height:6px"><div class="ruler-tick-label">25:00</div></div>
+        <div class="ruler-tick" style="left:78.9%; height:6px"><div class="ruler-tick-label">30:00</div></div>
+        <div class="ruler-tick" style="left:92.1%; height:6px"><div class="ruler-tick-label">35:00</div></div>
+        <!-- Pivotal moment markers -->
+        <div class="ruler-marker" style="left:0%"></div>
+        <div class="ruler-marker" style="left:5.3%"></div>
+        <div class="ruler-marker" style="left:12.9%"></div>
+        <div class="ruler-marker" style="left:21.5%"></div>
+        <div class="ruler-marker" style="left:28.7%"></div>
+        <div class="ruler-marker" style="left:35.2%"></div>
+        <div class="ruler-marker" style="left:44.8%"></div>
+        <div class="ruler-marker" style="left:53.1%"></div>
+        <div class="ruler-marker" style="left:61.4%"></div>
+        <div class="ruler-marker" style="left:70.9%"></div>
+        <div class="ruler-marker" style="left:82.3%"></div>
+        <div class="ruler-marker" style="left:91.7%"></div>
+      </div>
+    </div>
+
+    <div class="transcript-scroll">
+
+      <!-- Turn 1 — SARAH — PIVOTAL -->
+      <div class="turn" onclick="toggleTurn(this)">
+        <div class="turn-gutter">
+          <div class="turn-timestamp">00:00</div>
+          <div class="turn-pivot-dot"></div>
+        </div>
+        <div class="turn-body">
+          <div class="turn-speaker">Sarah<div class="turn-speaker-line"></div></div>
+          <div class="turn-text">I wanted to start by saying — I've been thinking about this for a while. The way we've been approaching the quarterly targets feels <em>fundamentally misaligned</em> with what the team actually cares about.</div>
+          <div class="pivot-badge">Opening Reframe</div>
+        </div>
+      </div>
+      <div class="expand-layer">
+        <div class="expand-inner">
+          <div class="expand-cell">
+            <div class="expand-label">Move Type</div>
+            <div class="expand-value">Strategic Reframe</div>
+            <div class="expand-value-small">Sarah opens with a reframe, not a complaint. Deliberate and measured. Sets the entire conversational agenda from the first sentence.</div>
+          </div>
+          <div class="expand-cell">
+            <div class="expand-label">Emotional Register</div>
+            <div class="expand-value">Controlled Urgency</div>
+            <div class="expand-metric">
+              <div class="expand-metric-num">78</div>
+              <div class="expand-metric-unit">Influence</div>
+            </div>
+            <div class="expand-bar-track"><div class="expand-bar-fill" style="width:78%"></div></div>
+            <div class="expand-metric" style="margin-top:8px">
+              <div class="expand-metric-num">62</div>
+              <div class="expand-metric-unit">Openness</div>
+            </div>
+            <div class="expand-bar-track"><div class="expand-bar-fill" style="width:62%"></div></div>
+          </div>
+          <div class="expand-cell-full">
+            <div class="expand-label">Key Signal</div>
+            <div class="expand-quote">"Fundamentally misaligned with what the team actually cares about."</div>
+            <div class="expand-value-small" style="margin-top:8px">The word "fundamentally" signals this is not a tactical complaint but a values-level challenge. High stakes framing from the opening breath.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Turn 2 — MARCUS -->
+      <div class="turn" onclick="toggleTurn(this)">
+        <div class="turn-gutter">
+          <div class="turn-timestamp">00:48</div>
+        </div>
+        <div class="turn-body">
+          <div class="turn-speaker">Marcus<div class="turn-speaker-line"></div></div>
+          <div class="turn-text">That's — okay. I hear you. But the targets came from the board, not from me. I'm not sure what you want me to do with that.</div>
+        </div>
+      </div>
+      <div class="expand-layer">
+        <div class="expand-inner">
+          <div class="expand-cell">
+            <div class="expand-label">Response Pattern</div>
+            <div class="expand-value">Deflection</div>
+            <div class="expand-value-small">Marcus distances himself from the problem by attributing it to an external authority. Classic defensive move.</div>
+          </div>
+          <div class="expand-cell">
+            <div class="expand-label">Listening Quality</div>
+            <div class="expand-value">Surface Acknowledgment</div>
+            <div class="expand-metric">
+              <div class="expand-metric-num">41</div>
+              <div class="expand-metric-unit">Rapport</div>
+            </div>
+            <div class="expand-bar-track"><div class="expand-bar-fill" style="width:41%"></div></div>
+            <div class="expand-metric" style="margin-top:8px">
+              <div class="expand-metric-num">35</div>
+              <div class="expand-metric-unit">Authenticity</div>
+            </div>
+            <div class="expand-bar-track"><div class="expand-bar-fill" style="width:35%"></div></div>
+          </div>
+          <div class="expand-cell-full">
+            <div class="expand-label">Analyst Note</div>
+            <div class="expand-quote">"I hear you" without demonstrated understanding. Defensive posture forming.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Turn 3 — SARAH -->
+      <div class="turn" onclick="toggleTurn(this)">
+        <div class="turn-gutter">
+          <div class="turn-timestamp">01:22</div>
+        </div>
+        <div class="turn-body">
+          <div class="turn-speaker">Sarah<div class="turn-speaker-line"></div></div>
+          <div class="turn-text">I'm not asking you to change the targets. I'm asking you to help me understand how we communicate them to people who are <em>burning out</em> trying to hit numbers that don't feel meaningful.</div>
+        </div>
+      </div>
+      <div class="expand-layer">
+        <div class="expand-inner">
+          <div class="expand-cell">
+            <div class="expand-label">Move Type</div>
+            <div class="expand-value">Scope Narrowing</div>
+            <div class="expand-value-small">Sarah reframes her ask — not systemic change, but communication strategy. Reduces perceived threat to Marcus significantly.</div>
+          </div>
+          <div class="expand-cell">
+            <div class="expand-label">Stakes Signal</div>
+            <div class="expand-value">Human Stakes Introduced</div>
+            <div class="expand-metric">
+              <div class="expand-metric-num">85</div>
+              <div class="expand-metric-unit">Clarity</div>
+            </div>
+            <div class="expand-bar-track"><div class="expand-bar-fill" style="width:85%"></div></div>
+          </div>
+          <div class="expand-cell-full">
+            <div class="expand-label">Key Signal</div>
+            <div class="expand-quote">"People who are burning out trying to hit numbers that don't feel meaningful."</div>
+            <div class="expand-value-small" style="margin-top:8px">First explicit mention of team wellbeing. Stakes become human, not just strategic. This is the sentence that changes the conversation's register.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Turn 4 — MARCUS — PIVOTAL -->
+      <div class="turn" onclick="toggleTurn(this)">
+        <div class="turn-gutter">
+          <div class="turn-timestamp">02:05</div>
+          <div class="turn-pivot-dot"></div>
+        </div>
+        <div class="turn-body">
+          <div class="turn-speaker">Marcus<div class="turn-speaker-line"></div></div>
+          <div class="turn-text">Wait — <em>burning out?</em> Is that actually happening? I didn't know it had gotten to that level. Who are we talking about?</div>
+          <div class="pivot-badge">Genuine Curiosity Emerges</div>
+        </div>
+      </div>
+      <div class="expand-layer">
+        <div class="expand-inner">
+          <div class="expand-cell">
+            <div class="expand-label">Posture Shift</div>
+            <div class="expand-value">Deflection → Inquiry</div>
+            <div class="expand-value-small">Marcus drops the defensive posture entirely. The word "burning out" penetrates. This is the first real opening in the conversation.</div>
+          </div>
+          <div class="expand-cell">
+            <div class="expand-label">Conversation Health</div>
+            <div class="expand-value">Trajectory Change</div>
+            <div class="expand-metric">
+              <div class="expand-metric-num">67</div>
+              <div class="expand-metric-unit">Rapport</div>
+            </div>
+            <div class="expand-bar-track"><div class="expand-bar-fill" style="width:67%"></div></div>
+            <div class="expand-metric" style="margin-top:8px">
+              <div class="expand-metric-num">74</div>
+              <div class="expand-metric-unit">Openness</div>
+            </div>
+            <div class="expand-bar-track"><div class="expand-bar-fill" style="width:74%"></div></div>
+          </div>
+          <div class="expand-cell-full">
+            <div class="expand-label">Trigger Word</div>
+            <div class="expand-quote">"Burning out" — the phrase that cracks the defensive shell.</div>
+            <div class="expand-value-small" style="margin-top:8px">The conversation's trajectory changes here. From this point forward, Marcus is no longer defending — he is investigating. This is the first genuine posture shift of the session.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Turn 5 — SARAH -->
+      <div class="turn" onclick="toggleTurn(this)">
+        <div class="turn-gutter">
+          <div class="turn-timestamp">02:41</div>
+        </div>
+        <div class="turn-body">
+          <div class="turn-speaker">Sarah<div class="turn-speaker-line"></div></div>
+          <div class="turn-text">Three people on the product side. Jamie especially. She's been working weekends for six weeks straight and hasn't said anything because she doesn't want to seem like she can't handle it.</div>
+        </div>
+      </div>
+      <div class="expand-layer">
+        <div class="expand-inner">
+          <div class="expand-cell">
+            <div class="expand-label">Disclosure Level</div>
+            <div class="expand-value">Specific &amp; Named</div>
+            <div class="expand-value-small">Sarah takes a significant risk by naming individuals. This moves from abstract to personal — a strong trust signal directed at Marcus.</div>
+          </div>
+          <div class="expand-cell">
+            <div class="expand-label">Cultural Insight</div>
+            <div class="expand-value">Silence as Coping</div>
+            <div class="expand-value-small">The team's silence is not satisfaction — it's self-protection. Critical systemic observation embedded in a personal anecdote.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Turn 6 — MARCUS — PIVOTAL -->
+      <div class="turn" onclick="toggleTurn(this)">
+        <div class="turn-gutter">
+          <div class="turn-timestamp">03:18</div>
+          <div class="turn-pivot-dot"></div>
+        </div>
+        <div class="turn-body">
+          <div class="turn-speaker">Marcus<div class="turn-speaker-line"></div></div>
+          <div class="turn-text">That's — I didn't know that. I genuinely didn't. And that's a problem. Not just for Jamie — that's a problem with <em>how I'm running this team.</em></div>
+          <div class="pivot-badge">Self-Attribution</div>
+        </div>
+      </div>
+      <div class="expand-layer">
+        <div class="expand-inner">
+          <div class="expand-cell">
+            <div class="expand-label">Accountability Move</div>
+            <div class="expand-value">Ownership Taken</div>
+            <div class="expand-value-small">Marcus takes ownership. Rare and significant. Conversation shifts from problem-identification to leadership reflection.</div>
+          </div>
+          <div class="expand-cell">
+            <div class="expand-label">Authenticity Signal</div>
+            <div class="expand-value">High — Unrehearsed</div>
+            <div class="expand-metric">
+              <div class="expand-metric-num">88</div>
+              <div class="expand-metric-unit">Authenticity</div>
+            </div>
+            <div class="expand-bar-track"><div class="expand-bar-fill" style="width:88%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Turn 7 — SARAH -->
+      <div class="turn" onclick="toggleTurn(this)">
+        <div class="turn-gutter">
+          <div class="turn-timestamp">04:02</div>
+        </div>
+        <div class="turn-body">
+          <div class="turn-speaker">Sarah<div class="turn-speaker-line"></div></div>
+          <div class="turn-text">I think the issue is that people feel like the targets are handed down without context. They don't understand <em>why</em> these numbers matter. And when you don't understand the why, the work feels arbitrary.</div>
+        </div>
+      </div>
+      <div class="expand-layer">
+        <div class="expand-inner">
+          <div class="expand-cell">
+            <div class="expand-label">Insight Type</div>
+            <div class="expand-value">Meaning Gap</div>
+            <div class="expand-value-small">The core diagnosis: disconnection between metrics and purpose. This is the actionable insight of the entire session.</div>
+          </div>
+          <div class="expand-cell">
+            <div class="expand-label">Clarity</div>
+            <div class="expand-metric">
+              <div class="expand-metric-num">92</div>
+              <div class="expand-metric-unit">Clarity</div>
+            </div>
+            <div class="expand-bar-track"><div class="expand-bar-fill" style="width:92%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Turn 8 — MARCUS — PIVOTAL -->
+      <div class="turn" onclick="toggleTurn(this)">
+        <div class="turn-gutter">
+          <div class="turn-timestamp">04:55</div>
+          <div class="turn-pivot-dot"></div>
+        </div>
+        <div class="turn-body">
+          <div class="turn-speaker">Marcus<div class="turn-speaker-line"></div></div>
+          <div class="turn-text">You're right. And honestly — I don't always know the why either. I get the numbers from the board and I pass them down. Maybe <em>that's</em> the real problem.</div>
+          <div class="pivot-badge">Cascade Admission</div>
+        </div>
+      </div>
+      <div class="expand-layer">
+        <div class="expand-inner">
+          <div class="expand-cell">
+            <div class="expand-label">Breakthrough Type</div>
+            <div class="expand-value">Structural Revelation</div>
+            <div class="expand-value-small">Marcus reveals he is also operating without full context. The problem is structural, not personal. Entire conversation reframes.</div>
+          </div>
+          <div class="expand-cell">
+            <div class="expand-label">Conversation Health</div>
+            <div class="expand-value">Peak Rapport</div>
+            <div class="expand-metric">
+              <div class="expand-metric-num">91</div>
+              <div class="expand-metric-unit">Rapport</div>
+            </div>
+            <div class="expand-bar-track"><div class="expand-bar-fill" style="width:91%"></div></div>
+            <div class="expand-metric" style="margin-top:8px">
+              <div class="expand-metric-num">72</div>
+              <div class="expand-metric-unit">Commitment</div>
+            </div>
+            <div class="expand-bar-track"><div class="expand-bar-fill" style="width:72%"></div></div>
+          </div>
+          <div class="expand-cell-full">
+            <div class="expand-label">Significance</div>
+            <div class="expand-quote">"I don't always know the why either."</div>
+            <div class="expand-value-small" style="margin-top:8px">Both parties now aligned on the same problem. Collaborative mode fully activated. The conversation has moved from confrontation to co-diagnosis.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Remaining turns placeholder -->
+      <div class="turn" style="cursor:default; opacity:0.5">
+        <div class="turn-gutter"></div>
+        <div class="turn-body" style="padding:16px; color:var(--gray-light); font-size:11px; font-style:italic">
+          — 39 more turns —
+        </div>
+      </div>
+
+    </div><!-- /transcript-scroll -->
+  </div><!-- /transcript-panel -->
+
+  <!-- RIGHT: PIVOTAL MOMENTS -->
+  <div class="moments-panel">
+    <div class="moments-header">
+      <div class="moments-header-title">Pivotal Moments</div>
+      <div class="moments-header-meta">12 detected &nbsp;·&nbsp; 6 categories</div>
+    </div>
+
+    <!-- Icon grid with blue line SVG art -->
+    <div class="moments-grid">
+
+      <!-- OPENING -->
+      <button class="moment-tile" onclick="selectMoment(this, 'opening')">
+        <!-- Blue line art: concentric arcs = opening/entry -->
+        <svg class="tile-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 18 C6 11.4 11.4 6 18 6" stroke="#2B5BA8" stroke-width="1" stroke-linecap="square"/>
+          <path d="M6 18 C6 24.6 11.4 30 18 30" stroke="#2B5BA8" stroke-width="1" stroke-linecap="square"/>
+          <path d="M10 18 C10 13.6 13.6 10 18 10" stroke="#2B5BA8" stroke-width="0.75" stroke-linecap="square"/>
+          <path d="M10 18 C10 22.4 13.6 26 18 26" stroke="#2B5BA8" stroke-width="0.75" stroke-linecap="square"/>
+          <line x1="18" y1="14" x2="18" y2="22" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="18" y1="18" x2="28" y2="18" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="25" y1="15" x2="28" y2="18" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="25" y1="21" x2="28" y2="18" stroke="#2B5BA8" stroke-width="1"/>
+        </svg>
+        <div class="tile-label">Opening</div>
+        <div class="tile-name">Entry Move</div>
+        <div class="tile-count">3</div>
+        <div class="tile-active-arrow">↙</div>
+      </button>
+
+      <!-- SHIFT -->
+      <button class="moment-tile" onclick="selectMoment(this, 'shift')">
+        <!-- Blue line art: two arrows changing direction -->
+        <svg class="tile-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="6" y1="12" x2="20" y2="12" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="17" y1="9" x2="20" y2="12" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="17" y1="15" x2="20" y2="12" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="20" y1="12" x2="20" y2="20" stroke="#2B5BA8" stroke-width="1" stroke-dasharray="2 2"/>
+          <line x1="20" y1="20" x2="30" y2="20" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="27" y1="17" x2="30" y2="20" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="27" y1="23" x2="30" y2="20" stroke="#2B5BA8" stroke-width="1"/>
+          <circle cx="20" cy="16" r="1.5" fill="#2B5BA8"/>
+        </svg>
+        <div class="tile-label">Dynamics</div>
+        <div class="tile-name">Posture Shift</div>
+        <div class="tile-count">4</div>
+        <div class="tile-active-arrow">↙</div>
+      </button>
+
+      <!-- BREAKTHROUGH -->
+      <button class="moment-tile" onclick="selectMoment(this, 'breakthrough')">
+        <!-- Blue line art: circle with radiating lines = breakthrough/illumination -->
+        <svg class="tile-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="18" cy="18" r="5" stroke="#2B5BA8" stroke-width="1"/>
+          <circle cx="18" cy="18" r="2" fill="#2B5BA8"/>
+          <line x1="18" y1="6" x2="18" y2="10" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="18" y1="26" x2="18" y2="30" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="6" y1="18" x2="10" y2="18" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="26" y1="18" x2="30" y2="18" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="9.5" y1="9.5" x2="12.3" y2="12.3" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="23.7" y1="23.7" x2="26.5" y2="26.5" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="26.5" y1="9.5" x2="23.7" y2="12.3" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="12.3" y1="23.7" x2="9.5" y2="26.5" stroke="#2B5BA8" stroke-width="1"/>
+        </svg>
+        <div class="tile-label">Breakthrough</div>
+        <div class="tile-name">Mutual Recognition</div>
+        <div class="tile-count">2</div>
+        <div class="tile-active-arrow">↙</div>
+      </button>
+
+      <!-- TENSION -->
+      <button class="moment-tile" onclick="selectMoment(this, 'tension')">
+        <!-- Blue line art: opposing arrows = tension/friction -->
+        <svg class="tile-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="8" y1="14" x2="28" y2="14" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="8" y1="14" x2="11" y2="11" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="8" y1="14" x2="11" y2="17" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="28" y1="22" x2="8" y2="22" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="28" y1="22" x2="25" y2="19" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="28" y1="22" x2="25" y2="25" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="18" y1="14" x2="18" y2="22" stroke="#2B5BA8" stroke-width="0.5" stroke-dasharray="1.5 1.5"/>
+        </svg>
+        <div class="tile-label">Tension</div>
+        <div class="tile-name">Friction Point</div>
+        <div class="tile-count">2</div>
+        <div class="tile-active-arrow">↙</div>
+      </button>
+
+      <!-- COMMITMENT -->
+      <button class="moment-tile" onclick="selectMoment(this, 'commitment')">
+        <!-- Blue line art: checkmark inside a square = commitment/agreement -->
+        <svg class="tile-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="8" width="20" height="20" stroke="#2B5BA8" stroke-width="1"/>
+          <line x1="12" y1="18" x2="16" y2="22" stroke="#2B5BA8" stroke-width="1.5"/>
+          <line x1="16" y1="22" x2="24" y2="14" stroke="#2B5BA8" stroke-width="1.5"/>
+          <line x1="8" y1="28" x2="28" y2="28" stroke="#2B5BA8" stroke-width="0.5" stroke-dasharray="2 2"/>
+        </svg>
+        <div class="tile-label">Resolution</div>
+        <div class="tile-name">Action Commitment</div>
+        <div class="tile-count">3</div>
+        <div class="tile-active-arrow">↙</div>
+      </button>
+
+      <!-- INSIGHT -->
+      <button class="moment-tile" onclick="selectMoment(this, 'insight')">
+        <!-- Blue line art: orbital diagram = insight/realization -->
+        <svg class="tile-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="18" cy="18" rx="12" ry="5" stroke="#2B5BA8" stroke-width="1" transform="rotate(-30 18 18)"/>
+          <ellipse cx="18" cy="18" rx="12" ry="5" stroke="#2B5BA8" stroke-width="0.75" transform="rotate(30 18 18)"/>
+          <circle cx="18" cy="18" r="2.5" fill="#2B5BA8"/>
+          <circle cx="26" cy="13" r="1.5" stroke="#2B5BA8" stroke-width="0.75"/>
+        </svg>
+        <div class="tile-label">Insight</div>
+        <div class="tile-name">Key Realization</div>
+        <div class="tile-count">4</div>
+        <div class="tile-active-arrow">↙</div>
+      </button>
+
+    </div><!-- /moments-grid -->
+
+    <!-- Detail drawer -->
+    <div class="moments-detail" id="moments-detail">
+      <div class="detail-header">
+        <div>
+          <div class="detail-title" id="detail-title">Opening Moves</div>
+          <div class="detail-count" id="detail-count">3 instances</div>
+        </div>
+        <button class="detail-close" onclick="closeDetail()">×</button>
+      </div>
+      <div id="detail-instances"></div>
+    </div>
+
+    <!-- Empty state when nothing selected -->
+    <div class="moments-empty" id="moments-empty">
+      <!-- Blue line art: empty state illustration — a compass rose -->
+      <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="32" cy="32" r="28" stroke="#2B5BA8" stroke-width="0.75"/>
+        <circle cx="32" cy="32" r="20" stroke="#2B5BA8" stroke-width="0.5" stroke-dasharray="3 3"/>
+        <circle cx="32" cy="32" r="3" fill="#2B5BA8"/>
+        <line x1="32" y1="4" x2="32" y2="28" stroke="#2B5BA8" stroke-width="0.75"/>
+        <line x1="32" y1="36" x2="32" y2="60" stroke="#2B5BA8" stroke-width="0.75"/>
+        <line x1="4" y1="32" x2="28" y2="32" stroke="#2B5BA8" stroke-width="0.75"/>
+        <line x1="36" y1="32" x2="60" y2="32" stroke="#2B5BA8" stroke-width="0.75"/>
+        <polygon points="32,8 30,16 32,14 34,16" fill="#2B5BA8"/>
+        <line x1="11.5" y1="11.5" x2="26" y2="26" stroke="#2B5BA8" stroke-width="0.5"/>
+        <line x1="52.5" y1="11.5" x2="38" y2="26" stroke="#2B5BA8" stroke-width="0.5"/>
+        <line x1="11.5" y1="52.5" x2="26" y2="38" stroke="#2B5BA8" stroke-width="0.5"/>
+        <line x1="52.5" y1="52.5" x2="38" y2="38" stroke="#2B5BA8" stroke-width="0.5"/>
+        <text x="32" y="6" text-anchor="middle" font-size="5" fill="#2B5BA8" font-family="serif">N</text>
+      </svg>
+      <div class="moments-empty-text">Select a category above<br>to explore its instances</div>
+    </div>
+
+  </div><!-- /moments-panel -->
+
+</div><!-- /main -->
+
+<!-- BOTTOM BAR -->
+<div class="bottombar">
+  <div class="bottombar-stat">
+    <div class="bottombar-num">38</div>
+    <div class="bottombar-label">Minutes</div>
+  </div>
+  <div class="bottombar-stat">
+    <div class="bottombar-num">47</div>
+    <div class="bottombar-label">Turns</div>
+  </div>
+  <div class="bottombar-stat">
+    <div class="bottombar-num">12</div>
+    <div class="bottombar-label">Pivots</div>
+  </div>
+  <div class="bottombar-stat">
+    <div class="bottombar-num">3</div>
+    <div class="bottombar-label">Commitments</div>
+  </div>
+  <div class="bottombar-health">
+    <div class="bottombar-health-label">Session Health</div>
+    <div class="health-track"><div class="health-fill"></div></div>
+    <div class="health-num">82</div>
+  </div>
+  <div class="bottombar-variation">Variation 04 — The Atlas</div>
+  <div class="var-nav">
+    <a href="v1-ledger.html">01</a>
+    <a href="v2-fieldnotes.html">02</a>
+    <a href="v3-dispatch.html">03</a>
+    <a href="v4-atlas.html" class="active">04</a>
+    <a href="index.html">↑</a>
+  </div>
+</div>
+
+<script>
+// Turn expand/collapse
+function toggleTurn(turn) {
+  const layer = turn.nextElementSibling;
+  if (!layer || !layer.classList.contains('expand-layer')) return;
+  const isOpen = layer.classList.contains('open');
+  // Close all others
+  document.querySelectorAll('.expand-layer.open').forEach(l => {
+    l.classList.remove('open');
+    l.previousElementSibling.classList.remove('expanded');
+  });
+  if (!isOpen) {
+    layer.classList.add('open');
+    turn.classList.add('expanded');
+    // Smooth scroll to show expand
+    setTimeout(() => {
+      layer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 50);
+  }
+}
+
+// Moment data
+const momentData = {
+  opening: {
+    title: 'Entry Moves',
+    count: 3,
+    instances: [
+      { time: '00:00', turn: 1, quote: 'The way we\'ve been approaching the quarterly targets feels fundamentally misaligned with what the team actually cares about.', note: 'Sarah opens with a reframe, not a complaint. Strategic and deliberate. Sets the entire conversational agenda from the first sentence.' },
+      { time: '02:05', turn: 4, quote: 'Wait — burning out? Is that actually happening?', note: 'Marcus\'s genuine curiosity marks a second opening — the conversation restarts on entirely new terms.' },
+      { time: '04:55', turn: 8, quote: 'I don\'t always know the why either.', note: 'Third opening: Marcus reveals his own information gap. Both parties now entering collaborative problem-solving mode.' }
+    ]
+  },
+  shift: {
+    title: 'Posture Shifts',
+    count: 4,
+    instances: [
+      { time: '00:48', turn: 2, quote: 'The targets came from the board, not from me.', note: 'Marcus establishes a defensive posture — attribution to external authority. First posture locked in.' },
+      { time: '02:05', turn: 4, quote: 'Wait — burning out? Is that actually happening?', note: 'Defensive posture drops. Marcus shifts from deflection to genuine inquiry. The single most important posture shift in the session.' },
+      { time: '03:18', turn: 6, quote: 'That\'s a problem with how I\'m running this team.', note: 'From inquiry to self-attribution. Marcus takes ownership — a rare and significant shift.' },
+      { time: '04:55', turn: 8, quote: 'Maybe that\'s the real problem.', note: 'Final shift: from personal accountability to structural diagnosis. Both parties now in collaborative mode.' }
+    ]
+  },
+  breakthrough: {
+    title: 'Mutual Recognitions',
+    count: 2,
+    instances: [
+      { time: '03:18', turn: 6, quote: 'I didn\'t know that. I genuinely didn\'t.', note: 'First breakthrough: Marcus acknowledges an information gap. Shared reality established for the first time.' },
+      { time: '04:55', turn: 8, quote: 'I don\'t always know the why either. I get the numbers from the board and I pass them down.', note: 'Second breakthrough: the problem is structural, not personal. Both parties recognize the same root cause simultaneously.' }
+    ]
+  },
+  tension: {
+    title: 'Friction Points',
+    count: 2,
+    instances: [
+      { time: '00:48', turn: 2, quote: 'I\'m not sure what you want me to do with that.', note: 'First friction: Marcus signals helplessness. Subtle resistance to engaging with the problem.' },
+      { time: '01:22', turn: 3, quote: 'I\'m not asking you to change the targets.', note: 'Sarah has to clarify scope because Marcus\'s defensiveness created ambiguity. Friction resolved through precision.' }
+    ]
+  },
+  commitment: {
+    title: 'Action Commitments',
+    count: 3,
+    instances: [
+      { time: '06:12', turn: 11, quote: 'Let\'s set up a session with the product leads to walk through the why behind each target.', note: 'First concrete commitment: Marcus initiates a communication intervention.' },
+      { time: '09:44', turn: 18, quote: 'I\'ll talk to Jamie directly this week.', note: 'Personal commitment: Marcus commits to a specific individual conversation.' },
+      { time: '14:30', turn: 27, quote: 'We should build this into the quarterly kickoff going forward.', note: 'Systemic commitment: both parties agree to a structural change in how targets are communicated.' }
+    ]
+  },
+  insight: {
+    title: 'Key Realizations',
+    count: 4,
+    instances: [
+      { time: '01:22', turn: 3, quote: 'People who are burning out trying to hit numbers that don\'t feel meaningful.', note: 'Insight 1: Meaninglessness as the root of burnout — not workload, but disconnection from purpose.' },
+      { time: '02:41', turn: 5, quote: 'She doesn\'t want to seem like she can\'t handle it.', note: 'Insight 2: Team silence is self-protection, not satisfaction. Critical cultural observation.' },
+      { time: '04:02', turn: 7, quote: 'When you don\'t understand the why, the work feels arbitrary.', note: 'Insight 3: The meaning gap diagnosis — the core actionable insight of the session.' },
+      { time: '04:55', turn: 8, quote: 'I get the numbers from the board and I pass them down.', note: 'Insight 4: The problem is structural — a cascade of context loss from board to team.' }
+    ]
+  }
+};
+
+let activeTile = null;
+
+function selectMoment(tile, key) {
+  // Toggle off if already active
+  if (activeTile === tile) {
+    tile.classList.remove('active');
+    activeTile = null;
+    document.getElementById('moments-detail').classList.remove('open');
+    document.getElementById('moments-empty').style.display = 'flex';
+    return;
+  }
+  // Deactivate previous
+  if (activeTile) activeTile.classList.remove('active');
+  tile.classList.add('active');
+  activeTile = tile;
+
+  const data = momentData[key];
+  document.getElementById('detail-title').textContent = data.title;
+  document.getElementById('detail-count').textContent = data.count + ' instances';
+
+  const container = document.getElementById('detail-instances');
+  container.innerHTML = data.instances.map(inst => `
+    <div class="detail-instance">
+      <div class="detail-instance-meta">
+        <div class="detail-timestamp">${inst.time}</div>
+        <div class="detail-turn-num">Turn ${inst.turn}</div>
+      </div>
+      <div class="detail-quote">"${inst.quote}"</div>
+      <div class="detail-note">${inst.note}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('moments-detail').classList.add('open');
+  document.getElementById('moments-empty').style.display = 'none';
+}
+
+function closeDetail() {
+  if (activeTile) activeTile.classList.remove('active');
+  activeTile = null;
+  document.getElementById('moments-detail').classList.remove('open');
+  document.getElementById('moments-empty').style.display = 'flex';
+}
+
+// Nav button active state
+document.querySelectorAll('.topbar-nav-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.topbar-nav-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversation Visualizer — The Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F4EFE4;
+    --bg-panel: #EDE8DC;
+    --yellow: #F5C800;
+    --yellow-light: #FDF3B0;
+    --black: #0D0D0D;
+    --gray: #6B6459;
+    --gray-light: #C8C0B0;
+    --border: rgba(13,13,13,0.15);
+    --serif: 'Playfair Display', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--black);
+    font-family: var(--sans);
+    font-size: 13px;
+    overflow: hidden;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    height: 40px;
+    border-bottom: 1px solid var(--black);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 0;
+    background: var(--bg);
+    position: relative;
+    z-index: 100;
+  }
+  .topbar-brand {
+    font-family: var(--serif);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding-right: 20px;
+    border-right: 1px solid var(--border);
+    margin-right: 20px;
+  }
+  .topbar-session {
+    font-size: 11px;
+    color: var(--gray);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    flex: 1;
+  }
+  .topbar-session span {
+    color: var(--black);
+    font-weight: 500;
+  }
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .topbar-btn {
+    height: 40px;
+    padding: 0 16px;
+    border: none;
+    border-left: 1px solid var(--border);
+    background: transparent;
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gray);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .topbar-btn:hover { background: var(--yellow); color: var(--black); }
+  .topbar-btn.active { background: var(--yellow); color: var(--black); }
+  .topbar-indicator {
+    width: 6px;
+    height: 6px;
+    background: var(--yellow);
+    margin-right: 8px;
+    display: inline-block;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .main {
+    display: flex;
+    height: calc(100vh - 40px);
+    overflow: hidden;
+  }
+
+  /* ── LEFT: TRANSCRIPT ── */
+  .transcript-panel {
+    width: 42%;
+    border-right: 1px solid var(--black);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .panel-header {
+    height: 36px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .panel-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray);
+  }
+  .panel-label-divider {
+    width: 1px;
+    height: 12px;
+    background: var(--border);
+  }
+  .panel-meta {
+    font-size: 9px;
+    color: var(--gray);
+    letter-spacing: 0.04em;
+  }
+  .panel-meta span { color: var(--black); font-weight: 500; }
+
+  .transcript-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+  }
+  .transcript-scroll::-webkit-scrollbar { width: 3px; }
+  .transcript-scroll::-webkit-scrollbar-track { background: transparent; }
+  .transcript-scroll::-webkit-scrollbar-thumb { background: var(--gray-light); }
+
+  /* ── TURN ── */
+  .turn {
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+    position: relative;
+  }
+  .turn:hover { background: rgba(245,200,0,0.06); }
+  .turn.active { background: rgba(245,200,0,0.1); }
+
+  .turn-header {
+    display: flex;
+    align-items: baseline;
+    padding: 12px 20px 0 20px;
+    gap: 10px;
+  }
+  .turn-speaker {
+    font-family: var(--serif);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .turn-speaker.s1 { color: var(--black); }
+  .turn-speaker.s2 { color: var(--gray); }
+  .turn-time {
+    font-size: 9px;
+    color: var(--gray-light);
+    letter-spacing: 0.06em;
+    font-weight: 400;
+  }
+  .turn-text {
+    padding: 6px 20px 12px 20px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--black);
+    font-weight: 300;
+  }
+  .turn-text em {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  /* ── EXPAND LAYER (the "underneath" reveal) ── */
+  .turn-expand {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1);
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border);
+  }
+  .turn.active .turn-expand { max-height: 320px; }
+
+  .expand-inner {
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .expand-card {
+    border: 1px solid var(--border);
+    padding: 12px;
+    background: var(--bg);
+  }
+  .expand-card-label {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .expand-card-label::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 1px;
+    background: var(--yellow);
+  }
+  .expand-card-value {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+  .expand-card-sub {
+    font-size: 10px;
+    color: var(--gray);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  .expand-card.highlight {
+    background: var(--yellow);
+    border-color: var(--black);
+  }
+  .expand-card.highlight .expand-card-label { color: rgba(13,13,13,0.6); }
+  .expand-card.highlight .expand-card-value { color: var(--black); }
+
+  .expand-bar {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .expand-bar-label {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray);
+    width: 80px;
+    flex-shrink: 0;
+  }
+  .expand-bar-track {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    position: relative;
+  }
+  .expand-bar-fill {
+    height: 100%;
+    background: var(--black);
+    transition: width 0.4s;
+  }
+  .expand-bar-val {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--black);
+    width: 28px;
+    text-align: right;
+  }
+
+  /* pivot indicator on turn */
+  .turn-pivot {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--black);
+    background: var(--yellow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .turn.pivot .turn-pivot { opacity: 1; }
+  .turn.pivot { border-left: 2px solid var(--yellow); }
+
+  /* ── RIGHT: MOMENTS GRID ── */
+  .moments-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .moments-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .moments-scroll::-webkit-scrollbar { width: 3px; }
+  .moments-scroll::-webkit-scrollbar-thumb { background: var(--gray-light); }
+
+  .moments-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--black);
+    border: 1px solid var(--black);
+  }
+
+  .moment-btn {
+    background: var(--bg);
+    padding: 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border: none;
+    text-align: left;
+    position: relative;
+  }
+  .moment-btn:hover { background: var(--yellow-light); }
+  .moment-btn.active { background: var(--yellow); }
+
+  .moment-icon {
+    width: 28px;
+    height: 28px;
+    border: 1px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .moment-icon svg { width: 14px; height: 14px; }
+
+  .moment-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray);
+  }
+  .moment-btn.active .moment-label { color: var(--black); }
+
+  .moment-name {
+    font-family: var(--serif);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  .moment-count {
+    font-size: 22px;
+    font-family: var(--serif);
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  /* Expanded moment detail */
+  .moment-detail {
+    border: 1px solid var(--black);
+    background: var(--bg-panel);
+    display: none;
+  }
+  .moment-detail.visible { display: block; }
+  .moment-detail-header {
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .moment-detail-title {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 500;
+    flex: 1;
+  }
+  .moment-detail-close {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: var(--gray);
+    transition: background 0.15s;
+  }
+  .moment-detail-close:hover { background: var(--black); color: white; }
+
+  .moment-detail-body {
+    padding: 16px 20px;
+  }
+  .moment-instance {
+    border-left: 2px solid var(--yellow);
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    background: var(--bg);
+  }
+  .moment-instance-time {
+    font-size: 9px;
+    color: var(--gray);
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .moment-instance-quote {
+    font-family: var(--serif);
+    font-size: 12px;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--black);
+  }
+  .moment-instance-note {
+    font-size: 10px;
+    color: var(--gray);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  /* Session summary bar at bottom of right panel */
+  .session-bar {
+    border-top: 1px solid var(--black);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+    background: var(--bg);
+  }
+  .session-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .session-stat-val {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1;
+  }
+  .session-stat-label {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray);
+  }
+  .session-divider {
+    width: 1px;
+    height: 28px;
+    background: var(--border);
+  }
+  .session-health {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .health-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray);
+  }
+  .health-score {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .health-track {
+    width: 80px;
+    height: 2px;
+    background: var(--border);
+  }
+  .health-fill {
+    height: 100%;
+    background: var(--black);
+  }
+
+  /* Variation label */
+  .var-badge {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--black);
+    color: white;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    z-index: 999;
+    pointer-events: none;
+  }
+
+  /* Nav between variations */
+  .var-nav {
+    position: fixed;
+    bottom: 16px;
+    right: 20px;
+    display: flex;
+    gap: 1px;
+    z-index: 999;
+  }
+  .var-nav a {
+    display: block;
+    width: 32px;
+    height: 32px;
+    background: var(--bg);
+    border: 1px solid var(--black);
+    font-size: 9px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.04em;
+    transition: background 0.15s;
+  }
+  .var-nav a:hover, .var-nav a.cur { background: var(--yellow); }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">Conversation Map</div>
+  <div class="topbar-session">
+    <span>Session 047</span> &nbsp;·&nbsp; Sarah Chen &amp; Marcus Webb &nbsp;·&nbsp; 14 Mar 2026 &nbsp;·&nbsp; 38 min
+  </div>
+  <div class="topbar-actions">
+    <button class="topbar-btn active"><span class="topbar-indicator"></span>Debrief</button>
+    <button class="topbar-btn">Map</button>
+    <button class="topbar-btn">Timeline</button>
+    <button class="topbar-btn">Export</button>
+    <button class="topbar-btn">Share</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT: TRANSCRIPT -->
+  <div class="transcript-panel">
+    <div class="panel-header">
+      <div class="panel-label">Transcript</div>
+      <div class="panel-label-divider"></div>
+      <div class="panel-meta"><span>47</span> turns &nbsp;·&nbsp; <span>12</span> pivotal moments</div>
+    </div>
+    <div class="transcript-scroll" id="transcript">
+
+      <div class="turn pivot" data-turn="1" onclick="toggleTurn(this)">
+        <div class="turn-header">
+          <div class="turn-speaker s1">Sarah</div>
+          <div class="turn-time">00:00</div>
+        </div>
+        <div class="turn-text">I wanted to start by saying — I've been thinking about this for a while. The way we've been approaching the quarterly targets feels <em>fundamentally misaligned</em> with what the team actually cares about.</div>
+        <div class="turn-pivot">P</div>
+        <div class="turn-expand">
+          <div class="expand-inner">
+            <div class="expand-card highlight">
+              <div class="expand-card-label">Pivotal Moment</div>
+              <div class="expand-card-value">Opening Reframe</div>
+              <div class="expand-card-sub">Sarah establishes the core tension immediately — misalignment between metrics and values.</div>
+            </div>
+            <div class="expand-card">
+              <div class="expand-card-label">Emotional Register</div>
+              <div class="expand-card-value">Controlled Urgency</div>
+              <div class="expand-card-sub">Measured delivery masking genuine frustration. High stakes framing.</div>
+            </div>
+            <div class="expand-bar">
+              <div class="expand-bar-label">Influence</div>
+              <div class="expand-bar-track"><div class="expand-bar-fill" style="width:78%"></div></div>
+              <div class="expand-bar-val">78%</div>
+            </div>
+            <div class="expand-bar">
+              <div class="expand-bar-label">Openness</div>
+              <div class="expand-bar-track"><div class="expand-bar-fill" style="width:62%"></div></div>
+              <div class="expand-bar-val">62%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="turn" data-turn="2" onclick="toggleTurn(this)">
+        <div class="turn-header">
+          <div class="turn-speaker s2">Marcus</div>
+          <div class="turn-time">00:48</div>
+        </div>
+        <div class="turn-text">That's — okay. I hear you. But the targets came from the board, not from me. I'm not sure what you want me to do with that.</div>
+        <div class="turn-expand">
+          <div class="expand-inner">
+            <div class="expand-card">
+              <div class="expand-card-label">Response Pattern</div>
+              <div class="expand-card-value">Deflection</div>
+              <div class="expand-card-sub">Marcus distances himself from the problem by attributing it to an external authority.</div>
+            </div>
+            <div class="expand-card">
+              <div class="expand-card-label">Listening Quality</div>
+              <div class="expand-card-value">Surface Acknowledgment</div>
+              <div class="expand-card-sub">"I hear you" without demonstrated understanding. Defensive posture forming.</div>
+            </div>
+            <div class="expand-bar">
+              <div class="expand-bar-label">Rapport</div>
+              <div class="expand-bar-track"><div class="expand-bar-fill" style="width:41%"></div></div>
+              <div class="expand-bar-val">41%</div>
+            </div>
+            <div class="expand-bar">
+              <div class="expand-bar-label">Authenticity</div>
+              <div class="expand-bar-track"><div class="expand-bar-fill" style="width:35%"></div></div>
+              <div class="expand-bar-val">35%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="turn" data-turn="3" onclick="toggleTurn(this)">
+        <div class="turn-header">
+          <div class="turn-speaker s1">Sarah</div>
+          <div class="turn-time">01:22</div>
+        </div>
+        <div class="turn-text">I'm not asking you to change the targets. I'm asking you to help me understand how we communicate them to people who are burning out trying to hit numbers that don't feel meaningful.</div>
+        <div class="turn-expand">
+          <div class="expand-inner">
+            <div class="expand-card">
+              <div class="expand-card-label">Clarification Move</div>
+              <div class="expand-card-value">Scope Narrowing</div>
+              <div class="expand-card-sub">Sarah reframes her ask — not systemic change, but communication strategy. Reduces perceived threat.</div>
+            </div>
+            <div class="expand-card">
+              <div class="expand-card-label">Key Signal</div>
+              <div class="expand-card-value">"Burning out"</div>
+              <div class="expand-card-sub">First explicit mention of team wellbeing. Stakes become human, not just strategic.</div>
+            </div>
+            <div class="expand-bar">
+              <div class="expand-bar-label">Clarity</div>
+              <div class="expand-bar-track"><div class="expand-bar-fill" style="width:85%"></div></div>
+              <div class="expand-bar-val">85%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="turn pivot" data-turn="4" onclick="toggleTurn(this)">
+        <div class="turn-header">
+          <div class="turn-speaker s2">Marcus</div>
+          <div class="turn-time">02:05</div>
+        </div>
+        <div class="turn-text">Wait — <em>burning out?</em> Is that actually happening? I didn't know it had gotten to that level. Who are we talking about?</div>
+        <div class="turn-pivot">P</div>
+        <div class="turn-expand">
+          <div class="expand-inner">
+            <div class="expand-card highlight">
+              <div class="expand-card-label">Pivotal Moment</div>
+              <div class="expand-card-value">Genuine Curiosity Emerges</div>
+              <div class="expand-card-sub">Marcus drops the defensive posture. The word "burning out" penetrates. This is the first real opening.</div>
+            </div>
+            <div class="expand-card">
+              <div class="expand-card-label">Shift Signal</div>
+              <div class="expand-card-value">Posture Change</div>
+              <div class="expand-card-sub">From deflection to inquiry. The conversation's trajectory changes here.</div>
+            </div>
+            <div class="expand-bar">
+              <div class="expand-bar-label">Rapport</div>
+              <div class="expand-bar-track"><div class="expand-bar-fill" style="width:67%"></div></div>
+              <div class="expand-bar-val">67%</div>
+            </div>
+            <div class="expand-bar">
+              <div class="expand-bar-label">Openness</div>
+              <div class="expand-bar-track"><div class="expand-bar-fill" style="width:74%"></div></div>
+              <div class="expand-bar-val">74%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="turn" data-turn="5" onclick="toggleTurn(this)">
+        <div class="turn-header">
+          <div class="turn-speaker s1">Sarah</div>
+          <div class="turn-time">02:41</div>
+        </div>
+        <div class="turn-text">Three people on the product side. Jamie especially. She's been working weekends for six weeks straight and hasn't said anything because she doesn't want to seem like she can't handle it.</div>
+        <div class="turn-expand">
+          <div class="expand-inner">
+            <div class="expand-card">
+              <div class="expand-card-label">Disclosure Level</div>
+              <div class="expand-card-value">Specific + Named</div>
+              <div class="expand-card-sub">Sarah takes a risk by naming individuals. This moves from abstract to personal — high trust signal.</div>
+            </div>
+            <div class="expand-card">
+              <div class="expand-card-label">Cultural Insight</div>
+              <div class="expand-card-value">Silence as Coping</div>
+              <div class="expand-card-sub">The team's silence is not satisfaction — it's self-protection. Critical systemic observation.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="turn" data-turn="6" onclick="toggleTurn(this)">
+        <div class="turn-header">
+          <div class="turn-speaker s2">Marcus</div>
+          <div class="turn-time">03:18</div>
+        </div>
+        <div class="turn-text">That's — I didn't know that. I genuinely didn't. And that's a problem. Not just for Jamie — that's a problem with how I'm running this team.</div>
+        <div class="turn-expand">
+          <div class="expand-inner">
+            <div class="expand-card">
+              <div class="expand-card-label">Accountability Move</div>
+              <div class="expand-card-value">Self-Attribution</div>
+              <div class="expand-card-sub">Marcus takes ownership. Rare and significant. Conversation shifts from problem-identification to leadership reflection.</div>
+            </div>
+            <div class="expand-bar">
+              <div class="expand-bar-label">Authenticity</div>
+              <div class="expand-bar-track"><div class="expand-bar-fill" style="width:88%"></div></div>
+              <div class="expand-bar-val">88%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="turn" data-turn="7" onclick="toggleTurn(this)">
+        <div class="turn-header">
+          <div class="turn-speaker s1">Sarah</div>
+          <div class="turn-time">04:02</div>
+        </div>
+        <div class="turn-text">I think the issue is that people feel like the targets are handed down without context. They don't understand <em>why</em> these numbers matter. And when you don't understand the why, the work feels arbitrary.</div>
+        <div class="turn-expand">
+          <div class="expand-inner">
+            <div class="expand-card">
+              <div class="expand-card-label">Insight Type</div>
+              <div class="expand-card-value">Meaning Gap</div>
+              <div class="expand-card-sub">The core diagnosis: disconnection between metrics and purpose. This is the actionable insight.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="turn pivot" data-turn="8" onclick="toggleTurn(this)">
+        <div class="turn-header">
+          <div class="turn-speaker s2">Marcus</div>
+          <div class="turn-time">04:55</div>
+        </div>
+        <div class="turn-text">You're right. And honestly — I don't always know the why either. I get the numbers from the board and I pass them down. Maybe that's the real problem.</div>
+        <div class="turn-pivot">P</div>
+        <div class="turn-expand">
+          <div class="expand-inner">
+            <div class="expand-card highlight">
+              <div class="expand-card-label">Pivotal Moment</div>
+              <div class="expand-card-value">Cascade Admission</div>
+              <div class="expand-card-sub">Marcus reveals he is also operating without full context. The problem is structural, not personal. Breakthrough moment.</div>
+            </div>
+            <div class="expand-card">
+              <div class="expand-card-label">Conversation Health</div>
+              <div class="expand-card-value">Peak Rapport</div>
+              <div class="expand-card-sub">Both parties now aligned on the same problem. Collaborative mode activated.</div>
+            </div>
+            <div class="expand-bar">
+              <div class="expand-bar-label">Rapport</div>
+              <div class="expand-bar-track"><div class="expand-bar-fill" style="width:91%"></div></div>
+              <div class="expand-bar-val">91%</div>
+            </div>
+            <div class="expand-bar">
+              <div class="expand-bar-label">Commitment</div>
+              <div class="expand-bar-track"><div class="expand-bar-fill" style="width:72%"></div></div>
+              <div class="expand-bar-val">72%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- More turns placeholder -->
+      <div style="padding: 20px; text-align: center; color: var(--gray-light); font-size: 11px; letter-spacing: 0.08em;">
+        — 39 more turns —
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT: PIVOTAL MOMENTS -->
+  <div class="moments-panel">
+    <div class="panel-header">
+      <div class="panel-label">Pivotal Moments</div>
+      <div class="panel-label-divider"></div>
+      <div class="panel-meta"><span>12</span> detected &nbsp;·&nbsp; <span>4</span> categories</div>
+    </div>
+    <div class="moments-scroll">
+
+      <div class="moments-grid">
+        <button class="moment-btn active" onclick="toggleMoment(this, 'opening')">
+          <div class="moment-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="moment-label">Opening</div>
+          <div class="moment-name">Conversation Entry</div>
+          <div class="moment-count">3</div>
+        </button>
+        <button class="moment-btn" onclick="toggleMoment(this, 'shift')">
+          <div class="moment-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
+            </svg>
+          </div>
+          <div class="moment-label">Shift</div>
+          <div class="moment-name">Posture Change</div>
+          <div class="moment-count">4</div>
+        </button>
+        <button class="moment-btn" onclick="toggleMoment(this, 'breakthrough')">
+          <div class="moment-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+            </svg>
+          </div>
+          <div class="moment-label">Breakthrough</div>
+          <div class="moment-name">Mutual Recognition</div>
+          <div class="moment-count">2</div>
+        </button>
+        <button class="moment-btn" onclick="toggleMoment(this, 'commitment')">
+          <div class="moment-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M20 6L9 17l-5-5"/>
+            </svg>
+          </div>
+          <div class="moment-label">Commitment</div>
+          <div class="moment-name">Action Agreement</div>
+          <div class="moment-count">3</div>
+        </button>
+        <button class="moment-btn" onclick="toggleMoment(this, 'tension')">
+          <div class="moment-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+          </div>
+          <div class="moment-label">Tension</div>
+          <div class="moment-name">Friction Point</div>
+          <div class="moment-count">2</div>
+        </button>
+        <button class="moment-btn" onclick="toggleMoment(this, 'insight')">
+          <div class="moment-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+            </svg>
+          </div>
+          <div class="moment-label">Insight</div>
+          <div class="moment-name">Realization</div>
+          <div class="moment-count">4</div>
+        </button>
+      </div>
+
+      <!-- Expanded detail panel -->
+      <div class="moment-detail visible" id="detail-opening">
+        <div class="moment-detail-header">
+          <div class="moment-detail-title">Conversation Entry — 3 instances</div>
+          <button class="moment-detail-close" onclick="closeMoment('opening')">×</button>
+        </div>
+        <div class="moment-detail-body">
+          <div class="moment-instance">
+            <div class="moment-instance-time">00:00 — Turn 1</div>
+            <div class="moment-instance-quote">"The way we've been approaching the quarterly targets feels fundamentally misaligned with what the team actually cares about."</div>
+            <div class="moment-instance-note">Sarah opens with a reframe, not a complaint. Strategic and deliberate. Sets the entire conversational agenda.</div>
+          </div>
+          <div class="moment-instance">
+            <div class="moment-instance-time">02:05 — Turn 4</div>
+            <div class="moment-instance-quote">"Wait — burning out? Is that actually happening?"</div>
+            <div class="moment-instance-note">Marcus's genuine curiosity marks a second opening — the conversation restarts on new terms.</div>
+          </div>
+          <div class="moment-instance">
+            <div class="moment-instance-time">04:55 — Turn 8</div>
+            <div class="moment-instance-quote">"I don't always know the why either."</div>
+            <div class="moment-instance-note">Third opening: Marcus reveals his own information gap. Both parties now entering collaborative problem-solving mode.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="moment-detail" id="detail-shift">
+        <div class="moment-detail-header">
+          <div class="moment-detail-title">Posture Change — 4 instances</div>
+          <button class="moment-detail-close" onclick="closeMoment('shift')">×</button>
+        </div>
+        <div class="moment-detail-body">
+          <div class="moment-instance">
+            <div class="moment-instance-time">02:05 — Turn 4</div>
+            <div class="moment-instance-quote">"Wait — burning out? Is that actually happening?"</div>
+            <div class="moment-instance-note">Marcus shifts from defensive deflection to genuine inquiry. The word "burning out" penetrates his initial posture.</div>
+          </div>
+          <div class="moment-instance">
+            <div class="moment-instance-time">03:18 — Turn 6</div>
+            <div class="moment-instance-quote">"That's a problem with how I'm running this team."</div>
+            <div class="moment-instance-note">Full ownership. Marcus moves from external attribution to self-accountability.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="moment-detail" id="detail-breakthrough" style="display:none">
+        <div class="moment-detail-header">
+          <div class="moment-detail-title">Mutual Recognition — 2 instances</div>
+          <button class="moment-detail-close" onclick="closeMoment('breakthrough')">×</button>
+        </div>
+        <div class="moment-detail-body">
+          <div class="moment-instance">
+            <div class="moment-instance-time">04:55 — Turn 8</div>
+            <div class="moment-instance-quote">"Maybe that's the real problem."</div>
+            <div class="moment-instance-note">Both parties simultaneously recognize the structural nature of the issue. Shared diagnosis achieved.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SESSION SUMMARY BAR -->
+    <div class="session-bar">
+      <div class="session-stat">
+        <div class="session-stat-val">38</div>
+        <div class="session-stat-label">Minutes</div>
+      </div>
+      <div class="session-divider"></div>
+      <div class="session-stat">
+        <div class="session-stat-val">47</div>
+        <div class="session-stat-label">Turns</div>
+      </div>
+      <div class="session-divider"></div>
+      <div class="session-stat">
+        <div class="session-stat-val">12</div>
+        <div class="session-stat-label">Pivots</div>
+      </div>
+      <div class="session-divider"></div>
+      <div class="session-stat">
+        <div class="session-stat-val">3</div>
+        <div class="session-stat-label">Commitments</div>
+      </div>
+      <div class="session-health">
+        <div class="health-label">Session Health</div>
+        <div class="health-score">82</div>
+        <div class="health-track"><div class="health-fill" style="width:82%"></div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="var-badge">Variation 01 — The Ledger</div>
+<div class="var-nav">
+  <a href="v1-ledger.html" class="cur">01</a>
+  <a href="v2-fieldnotes.html">02</a>
+  <a href="v3-dispatch.html">03</a>
+  <a href="index.html">↑</a>
+</div>
+
+<script>
+function toggleTurn(el) {
+  const wasActive = el.classList.contains('active');
+  document.querySelectorAll('.turn.active').forEach(t => t.classList.remove('active'));
+  if (!wasActive) el.classList.add('active');
+}
+
+function toggleMoment(btn, id) {
+  document.querySelectorAll('.moment-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.moment-detail').forEach(d => d.style.display = 'none');
+  const detail = document.getElementById('detail-' + id);
+  if (detail) detail.style.display = 'block';
+}
+
+function closeMoment(id) {
+  const detail = document.getElementById('detail-' + id);
+  if (detail) detail.style.display = 'none';
+  document.querySelectorAll('.moment-btn').forEach(b => b.classList.remove('active'));
+}
+</script>
+</body>
+</html>

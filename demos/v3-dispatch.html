@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversation Visualizer — The Dispatch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F4EFE4;
+    --bg-panel: #EDE8DC;
+    --bg-dark: #1A1814;
+    --yellow: #F5C800;
+    --yellow-light: #FDF3B0;
+    --black: #0D0D0D;
+    --gray: #6B6459;
+    --gray-light: #C8C0B0;
+    --border: rgba(13,13,13,0.15);
+    --serif: 'Playfair Display', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--black);
+    font-family: var(--sans);
+    font-size: 13px;
+    overflow: hidden;
+  }
+
+  /* ── TOP BAR — editorial masthead style ── */
+  .topbar {
+    border-bottom: 1px solid var(--black);
+    background: var(--bg);
+    position: relative;
+    z-index: 100;
+  }
+  .topbar-upper {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 0;
+  }
+  .topbar-upper-left {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray);
+    flex: 1;
+  }
+  .topbar-upper-left span { color: var(--black); }
+  .topbar-upper-right {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .topbar-upper-btn {
+    height: 32px;
+    padding: 0 14px;
+    border: none;
+    border-left: 1px solid var(--border);
+    background: transparent;
+    font-family: var(--sans);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .topbar-upper-btn:hover { background: var(--yellow); color: var(--black); }
+
+  .topbar-lower {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 0;
+  }
+  .topbar-brand {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    flex: 1;
+  }
+  .topbar-nav {
+    display: flex;
+    align-items: stretch;
+    height: 44px;
+    gap: 0;
+  }
+  .topbar-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    border-left: 1px solid var(--border);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gray);
+    cursor: pointer;
+    transition: background 0.15s;
+    background: transparent;
+    border-top: none;
+    border-right: none;
+    border-bottom: none;
+  }
+  .topbar-nav-item:hover { background: var(--yellow-light); color: var(--black); }
+  .topbar-nav-item.active { background: var(--yellow); color: var(--black); border-bottom: 2px solid var(--black); }
+
+  /* ── MAIN ── */
+  .main {
+    display: flex;
+    height: calc(100vh - 77px);
+    overflow: hidden;
+  }
+
+  /* ── LEFT: TRANSCRIPT (two-column speaker layout) ── */
+  .transcript-panel {
+    width: 55%;
+    border-right: 1px solid var(--black);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .panel-header {
+    height: 36px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 0;
+    flex-shrink: 0;
+  }
+  .panel-header-col {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .panel-header-col + .panel-header-col {
+    border-left: 1px solid var(--border);
+    padding-left: 20px;
+  }
+  .panel-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray);
+  }
+  .panel-label.s1 { color: var(--black); }
+  .panel-label.s2 { color: var(--gray); }
+  .speaker-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--black);
+    flex-shrink: 0;
+  }
+  .speaker-dot.s2 { background: var(--gray-light); }
+
+  .transcript-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+  }
+  .transcript-scroll::-webkit-scrollbar { width: 2px; }
+  .transcript-scroll::-webkit-scrollbar-thumb { background: var(--gray-light); }
+
+  /* ── TWO-COLUMN TURN ── */
+  .exchange {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+    min-height: 60px;
+    position: relative;
+  }
+  .exchange.pivot {
+    border-bottom: 1px solid var(--black);
+  }
+  .exchange.pivot::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--yellow);
+  }
+
+  .exchange-col {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background 0.1s;
+    position: relative;
+  }
+  .exchange-col:first-child {
+    border-right: 1px solid var(--border);
+  }
+  .exchange-col:hover { background: rgba(245,200,0,0.06); }
+  .exchange-col.active { background: rgba(245,200,0,0.1); }
+  .exchange-col.empty {
+    background: var(--bg-panel);
+    cursor: default;
+  }
+  .exchange-col.empty:hover { background: var(--bg-panel); }
+
+  .exchange-time {
+    font-size: 8px;
+    color: var(--gray-light);
+    letter-spacing: 0.06em;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .exchange-pivot-dot {
+    width: 5px;
+    height: 5px;
+    background: var(--yellow);
+    border: 1px solid var(--black);
+    flex-shrink: 0;
+  }
+  .exchange-text {
+    font-size: 12px;
+    line-height: 1.65;
+    color: var(--black);
+    font-weight: 300;
+  }
+  .exchange-text em {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  /* ── EXPAND LAYER (full-width, slides down between exchanges) ── */
+  .exchange-expand {
+    grid-column: 1 / -1;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+    background: var(--bg-dark);
+    color: white;
+    border-top: 0px solid transparent;
+  }
+  .exchange-col.active ~ .exchange-expand,
+  .exchange-expand.open {
+    max-height: 240px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .expand-inner {
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+  .expand-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .expand-stat-label {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+  }
+  .expand-stat-value {
+    font-family: var(--serif);
+    font-size: 15px;
+    color: white;
+    line-height: 1.2;
+  }
+  .expand-stat-bar {
+    height: 1px;
+    background: rgba(255,255,255,0.12);
+  }
+  .expand-stat-bar-fill {
+    height: 100%;
+    background: var(--yellow);
+  }
+  .expand-insight {
+    grid-column: 1 / -1;
+    font-family: var(--serif);
+    font-size: 12px;
+    font-style: italic;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.5;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .expand-tag {
+    display: inline-block;
+    background: var(--yellow);
+    color: var(--black);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    margin-bottom: 10px;
+    grid-column: 1 / -1;
+  }
+
+  /* ── RIGHT: VERTICAL MOMENT CARDS ── */
+  .moments-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .moments-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+  }
+  .moments-scroll::-webkit-scrollbar { width: 2px; }
+  .moments-scroll::-webkit-scrollbar-thumb { background: var(--gray-light); }
+
+  .moment-card {
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+  }
+  .moment-card:hover { background: rgba(245,200,0,0.05); }
+  .moment-card.active { background: var(--yellow-light); }
+  .moment-card.active .moment-card-header { border-bottom: 1px solid var(--border); }
+
+  .moment-card-header {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .moment-card-icon {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .moment-card-icon svg { width: 13px; height: 13px; }
+  .moment-card.active .moment-card-icon { background: var(--yellow); }
+
+  .moment-card-meta {
+    flex: 1;
+  }
+  .moment-card-category {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 3px;
+  }
+  .moment-card-title {
+    font-family: var(--serif);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+  .moment-card-count {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--gray-light);
+    flex-shrink: 0;
+  }
+  .moment-card.active .moment-card-count { color: var(--black); }
+
+  /* Expanded instances */
+  .moment-card-body {
+    display: none;
+    padding: 0;
+  }
+  .moment-card.active .moment-card-body { display: block; }
+
+  .moment-instance {
+    padding: 12px 20px 12px 60px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .moment-instance:last-child { border-bottom: none; }
+  .moment-instance::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 18px;
+    width: 28px;
+    height: 1px;
+    background: var(--yellow);
+  }
+  .moment-instance-time {
+    font-size: 9px;
+    color: var(--gray);
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .moment-instance-quote {
+    font-family: var(--serif);
+    font-size: 12.5px;
+    font-style: italic;
+    line-height: 1.5;
+    margin-bottom: 5px;
+  }
+  .moment-instance-note {
+    font-size: 10.5px;
+    color: var(--gray);
+    line-height: 1.45;
+  }
+
+  /* Session strip */
+  .session-strip {
+    border-top: 1px solid var(--black);
+    background: var(--bg-dark);
+    color: white;
+    display: flex;
+    align-items: stretch;
+    flex-shrink: 0;
+  }
+  .strip-stat {
+    flex: 1;
+    padding: 10px 16px;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .strip-stat:last-child { border-right: none; }
+  .strip-val {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1;
+  }
+  .strip-label {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+  }
+  .strip-stat.health { background: var(--yellow); }
+  .strip-stat.health .strip-val { color: var(--black); }
+  .strip-stat.health .strip-label { color: rgba(13,13,13,0.5); }
+
+  /* Variation nav */
+  .var-badge {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--black);
+    color: white;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    z-index: 999;
+    pointer-events: none;
+  }
+  .var-nav {
+    position: fixed;
+    bottom: 16px;
+    right: 20px;
+    display: flex;
+    gap: 1px;
+    z-index: 999;
+  }
+  .var-nav a {
+    display: flex;
+    width: 32px;
+    height: 32px;
+    background: var(--bg);
+    border: 1px solid var(--black);
+    font-size: 9px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--black);
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.04em;
+    transition: background 0.15s;
+  }
+  .var-nav a:hover, .var-nav a.cur { background: var(--yellow); }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR — editorial masthead -->
+<div class="topbar">
+  <div class="topbar-upper">
+    <div class="topbar-upper-left">
+      Session <span>047</span> &nbsp;·&nbsp; <span>Sarah Chen &amp; Marcus Webb</span> &nbsp;·&nbsp; <span>14 Mar 2026</span> &nbsp;·&nbsp; <span>38 min</span>
+    </div>
+    <div class="topbar-upper-right">
+      <button class="topbar-upper-btn">Export</button>
+      <button class="topbar-upper-btn">Share</button>
+      <button class="topbar-upper-btn">Settings</button>
+    </div>
+  </div>
+  <div class="topbar-lower">
+    <div class="topbar-brand">Conversation Map</div>
+    <div class="topbar-nav">
+      <button class="topbar-nav-item active">Debrief</button>
+      <button class="topbar-nav-item">Map</button>
+      <button class="topbar-nav-item">Timeline</button>
+      <button class="topbar-nav-item">Patterns</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT: TWO-COLUMN TRANSCRIPT -->
+  <div class="transcript-panel">
+    <div class="panel-header">
+      <div class="panel-header-col">
+        <div class="speaker-dot s1"></div>
+        <div class="panel-label s1">Sarah Chen</div>
+      </div>
+      <div class="panel-header-col">
+        <div class="speaker-dot s2"></div>
+        <div class="panel-label s2">Marcus Webb</div>
+      </div>
+    </div>
+    <div class="transcript-scroll">
+
+      <!-- Exchange 1: Sarah speaks, Marcus empty -->
+      <div class="exchange pivot" id="ex1">
+        <div class="exchange-col" onclick="toggleExchange('ex1')">
+          <div class="exchange-time">
+            <div class="exchange-pivot-dot"></div>
+            00:00
+          </div>
+          <div class="exchange-text">I wanted to start by saying — I've been thinking about this for a while. The way we've been approaching the quarterly targets feels <em>fundamentally misaligned</em> with what the team actually cares about.</div>
+        </div>
+        <div class="exchange-col empty"></div>
+        <div class="exchange-expand" id="ex1-expand">
+          <div class="expand-inner">
+            <div class="expand-tag">Pivotal Moment — Opening Reframe</div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Influence</div>
+              <div class="expand-stat-value">78%</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:78%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Openness</div>
+              <div class="expand-stat-value">62%</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:62%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Emotion</div>
+              <div class="expand-stat-value">Controlled</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:55%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Pattern</div>
+              <div class="expand-stat-value">Strategic Frame</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:90%"></div></div>
+            </div>
+            <div class="expand-insight">Sarah establishes the core tension immediately — misalignment between metrics and values. Measured delivery masking genuine frustration. Sets the entire conversational agenda from the first sentence.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exchange 2: Marcus responds -->
+      <div class="exchange" id="ex2">
+        <div class="exchange-col empty"></div>
+        <div class="exchange-col" onclick="toggleExchange('ex2')">
+          <div class="exchange-time">00:48</div>
+          <div class="exchange-text">That's — okay. I hear you. But the targets came from the board, not from me. I'm not sure what you want me to do with that.</div>
+        </div>
+        <div class="exchange-expand" id="ex2-expand">
+          <div class="expand-inner">
+            <div class="expand-stat">
+              <div class="expand-stat-label">Rapport</div>
+              <div class="expand-stat-value">41%</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:41%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Authenticity</div>
+              <div class="expand-stat-value">35%</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:35%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Pattern</div>
+              <div class="expand-stat-value">Deflection</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:70%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Listening</div>
+              <div class="expand-stat-value">Surface</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:30%"></div></div>
+            </div>
+            <div class="expand-insight">Marcus distances himself from the problem by attributing it to an external authority. "I hear you" without demonstrated understanding. Defensive posture forming.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exchange 3: Sarah clarifies -->
+      <div class="exchange" id="ex3">
+        <div class="exchange-col" onclick="toggleExchange('ex3')">
+          <div class="exchange-time">01:22</div>
+          <div class="exchange-text">I'm not asking you to change the targets. I'm asking you to help me understand how we communicate them to people who are burning out trying to hit numbers that don't feel meaningful.</div>
+        </div>
+        <div class="exchange-col empty"></div>
+        <div class="exchange-expand" id="ex3-expand">
+          <div class="expand-inner">
+            <div class="expand-stat">
+              <div class="expand-stat-label">Clarity</div>
+              <div class="expand-stat-value">85%</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:85%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Move Type</div>
+              <div class="expand-stat-value">Scope Narrow</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:60%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Stakes</div>
+              <div class="expand-stat-value">Human</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:80%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Risk</div>
+              <div class="expand-stat-value">Medium</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:50%"></div></div>
+            </div>
+            <div class="expand-insight">Sarah reframes her ask — not systemic change, but communication strategy. First explicit mention of team wellbeing. Stakes become human, not just strategic.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exchange 4: Marcus — pivot -->
+      <div class="exchange pivot" id="ex4">
+        <div class="exchange-col empty"></div>
+        <div class="exchange-col" onclick="toggleExchange('ex4')">
+          <div class="exchange-time">
+            <div class="exchange-pivot-dot"></div>
+            02:05
+          </div>
+          <div class="exchange-text">Wait — <em>burning out?</em> Is that actually happening? I didn't know it had gotten to that level. Who are we talking about?</div>
+        </div>
+        <div class="exchange-expand" id="ex4-expand">
+          <div class="expand-inner">
+            <div class="expand-tag">Pivotal Moment — Genuine Curiosity Emerges</div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Rapport</div>
+              <div class="expand-stat-value">67%</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:67%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Openness</div>
+              <div class="expand-stat-value">74%</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:74%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Shift</div>
+              <div class="expand-stat-value">Posture</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:100%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Trigger Word</div>
+              <div class="expand-stat-value">"Burning out"</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:100%"></div></div>
+            </div>
+            <div class="expand-insight">Marcus drops the defensive posture. The word "burning out" penetrates. This is the first real opening — the conversation's trajectory changes here.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exchange 5: Sarah names names -->
+      <div class="exchange" id="ex5">
+        <div class="exchange-col" onclick="toggleExchange('ex5')">
+          <div class="exchange-time">02:41</div>
+          <div class="exchange-text">Three people on the product side. Jamie especially. She's been working weekends for six weeks straight and hasn't said anything because she doesn't want to seem like she can't handle it.</div>
+        </div>
+        <div class="exchange-col empty"></div>
+        <div class="exchange-expand" id="ex5-expand">
+          <div class="expand-inner">
+            <div class="expand-stat">
+              <div class="expand-stat-label">Disclosure</div>
+              <div class="expand-stat-value">Specific + Named</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:90%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Risk</div>
+              <div class="expand-stat-value">High</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:80%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Insight</div>
+              <div class="expand-stat-value">Silence = Cope</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:95%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Trust Signal</div>
+              <div class="expand-stat-value">Strong</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:85%"></div></div>
+            </div>
+            <div class="expand-insight">Sarah takes a risk by naming individuals. The team's silence is not satisfaction — it's self-protection. Critical systemic observation.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exchange 6: Marcus takes ownership -->
+      <div class="exchange" id="ex6">
+        <div class="exchange-col empty"></div>
+        <div class="exchange-col" onclick="toggleExchange('ex6')">
+          <div class="exchange-time">03:18</div>
+          <div class="exchange-text">That's — I didn't know that. I genuinely didn't. And that's a problem. Not just for Jamie — that's a problem with how I'm running this team.</div>
+        </div>
+        <div class="exchange-expand" id="ex6-expand">
+          <div class="expand-inner">
+            <div class="expand-stat">
+              <div class="expand-stat-label">Authenticity</div>
+              <div class="expand-stat-value">88%</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:88%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Move Type</div>
+              <div class="expand-stat-value">Self-Attribution</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:100%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Rapport</div>
+              <div class="expand-stat-value">79%</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:79%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Rarity</div>
+              <div class="expand-stat-value">High</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:85%"></div></div>
+            </div>
+            <div class="expand-insight">Marcus takes ownership. Rare and significant. Conversation shifts from problem-identification to leadership reflection.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exchange 7+8: both speak -->
+      <div class="exchange" id="ex7">
+        <div class="exchange-col" onclick="toggleExchange('ex7')">
+          <div class="exchange-time">04:02</div>
+          <div class="exchange-text">I think the issue is that people feel like the targets are handed down without context. They don't understand <em>why</em> these numbers matter. And when you don't understand the why, the work feels arbitrary.</div>
+        </div>
+        <div class="exchange-col empty"></div>
+        <div class="exchange-expand" id="ex7-expand">
+          <div class="expand-inner">
+            <div class="expand-stat">
+              <div class="expand-stat-label">Insight Type</div>
+              <div class="expand-stat-value">Meaning Gap</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:95%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Clarity</div>
+              <div class="expand-stat-value">92%</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:92%"></div></div>
+            </div>
+            <div class="expand-insight">The core diagnosis: disconnection between metrics and purpose. This is the actionable insight of the entire session.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="exchange pivot" id="ex8">
+        <div class="exchange-col empty"></div>
+        <div class="exchange-col" onclick="toggleExchange('ex8')">
+          <div class="exchange-time">
+            <div class="exchange-pivot-dot"></div>
+            04:55
+          </div>
+          <div class="exchange-text">You're right. And honestly — I don't always know the why either. I get the numbers from the board and I pass them down. Maybe that's the real problem.</div>
+        </div>
+        <div class="exchange-expand" id="ex8-expand">
+          <div class="expand-inner">
+            <div class="expand-tag">Pivotal Moment — Cascade Admission</div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Rapport</div>
+              <div class="expand-stat-value">91%</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:91%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Commitment</div>
+              <div class="expand-stat-value">72%</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:72%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Health</div>
+              <div class="expand-stat-value">Peak</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:100%"></div></div>
+            </div>
+            <div class="expand-stat">
+              <div class="expand-stat-label">Mode</div>
+              <div class="expand-stat-value">Collaborative</div>
+              <div class="expand-stat-bar"><div class="expand-stat-bar-fill" style="width:95%"></div></div>
+            </div>
+            <div class="expand-insight">Marcus reveals he is also operating without full context. The problem is structural, not personal. Both parties now aligned on the same problem — collaborative mode activated.</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 16px; text-align: center; color: var(--gray-light); font-size: 10px; letter-spacing: 0.08em;">
+        — 39 more turns —
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT: VERTICAL MOMENT CARDS -->
+  <div class="moments-panel">
+    <div class="panel-header" style="padding: 0 20px;">
+      <div class="panel-label" style="flex:1">Pivotal Moments</div>
+      <div style="font-size:9px; color:var(--gray)"><span style="color:var(--black);font-weight:500">12</span> detected</div>
+    </div>
+    <div class="moments-scroll">
+
+      <div class="moment-card active" onclick="toggleCard(this)">
+        <div class="moment-card-header">
+          <div class="moment-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="moment-card-meta">
+            <div class="moment-card-category">Entry</div>
+            <div class="moment-card-title">Opening Moves</div>
+          </div>
+          <div class="moment-card-count">3</div>
+        </div>
+        <div class="moment-card-body">
+          <div class="moment-instance">
+            <div class="moment-instance-time">00:00 · Turn 1</div>
+            <div class="moment-instance-quote">"Fundamentally misaligned with what the team actually cares about."</div>
+            <div class="moment-instance-note">Sarah opens with a reframe. Sets the entire conversational agenda.</div>
+          </div>
+          <div class="moment-instance">
+            <div class="moment-instance-time">02:05 · Turn 4</div>
+            <div class="moment-instance-quote">"Wait — burning out? Is that actually happening?"</div>
+            <div class="moment-instance-note">Marcus's genuine curiosity marks a second opening — new terms established.</div>
+          </div>
+          <div class="moment-instance">
+            <div class="moment-instance-time">04:55 · Turn 8</div>
+            <div class="moment-instance-quote">"I don't always know the why either."</div>
+            <div class="moment-instance-note">Third opening: Marcus reveals his own information gap.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="moment-card" onclick="toggleCard(this)">
+        <div class="moment-card-header">
+          <div class="moment-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
+            </svg>
+          </div>
+          <div class="moment-card-meta">
+            <div class="moment-card-category">Dynamics</div>
+            <div class="moment-card-title">Posture Shifts</div>
+          </div>
+          <div class="moment-card-count">4</div>
+        </div>
+        <div class="moment-card-body">
+          <div class="moment-instance">
+            <div class="moment-instance-time">02:05 · Turn 4</div>
+            <div class="moment-instance-quote">"Wait — burning out? Is that actually happening?"</div>
+            <div class="moment-instance-note">Marcus shifts from defensive deflection to genuine inquiry.</div>
+          </div>
+          <div class="moment-instance">
+            <div class="moment-instance-time">03:18 · Turn 6</div>
+            <div class="moment-instance-quote">"That's a problem with how I'm running this team."</div>
+            <div class="moment-instance-note">Full ownership. From external attribution to self-accountability.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="moment-card" onclick="toggleCard(this)">
+        <div class="moment-card-header">
+          <div class="moment-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+          </div>
+          <div class="moment-card-meta">
+            <div class="moment-card-category">Breakthrough</div>
+            <div class="moment-card-title">Mutual Recognition</div>
+          </div>
+          <div class="moment-card-count">2</div>
+        </div>
+        <div class="moment-card-body">
+          <div class="moment-instance">
+            <div class="moment-instance-time">04:55 · Turn 8</div>
+            <div class="moment-instance-quote">"Maybe that's the real problem."</div>
+            <div class="moment-instance-note">Both parties simultaneously recognize the structural nature of the issue. Shared diagnosis achieved.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="moment-card" onclick="toggleCard(this)">
+        <div class="moment-card-header">
+          <div class="moment-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+          </div>
+          <div class="moment-card-meta">
+            <div class="moment-card-category">Tension</div>
+            <div class="moment-card-title">Friction Points</div>
+          </div>
+          <div class="moment-card-count">2</div>
+        </div>
+        <div class="moment-card-body">
+          <div class="moment-instance">
+            <div class="moment-instance-time">00:48 · Turn 2</div>
+            <div class="moment-instance-quote">"The targets came from the board, not from me."</div>
+            <div class="moment-instance-note">First deflection. Marcus creates distance between himself and the problem.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="moment-card" onclick="toggleCard(this)">
+        <div class="moment-card-header">
+          <div class="moment-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M20 6L9 17l-5-5"/>
+            </svg>
+          </div>
+          <div class="moment-card-meta">
+            <div class="moment-card-category">Resolution</div>
+            <div class="moment-card-title">Action Commitments</div>
+          </div>
+          <div class="moment-card-count">3</div>
+        </div>
+        <div class="moment-card-body">
+          <div class="moment-instance">
+            <div class="moment-instance-time">Later in session</div>
+            <div class="moment-instance-quote">Marcus commits to meeting with the board to understand the strategic context behind Q2 targets.</div>
+            <div class="moment-instance-note">Specific, time-bound, self-initiated. High commitment quality.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="moment-card" onclick="toggleCard(this)">
+        <div class="moment-card-header">
+          <div class="moment-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4"/>
+            </svg>
+          </div>
+          <div class="moment-card-meta">
+            <div class="moment-card-category">Insight</div>
+            <div class="moment-card-title">Key Realizations</div>
+          </div>
+          <div class="moment-card-count">4</div>
+        </div>
+        <div class="moment-card-body">
+          <div class="moment-instance">
+            <div class="moment-instance-time">04:02 · Turn 7</div>
+            <div class="moment-instance-quote">"When you don't understand the why, the work feels arbitrary."</div>
+            <div class="moment-instance-note">The core diagnosis: disconnection between metrics and purpose. The actionable insight of the entire session.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SESSION STRIP -->
+    <div class="session-strip">
+      <div class="strip-stat">
+        <div class="strip-val">38</div>
+        <div class="strip-label">Minutes</div>
+      </div>
+      <div class="strip-stat">
+        <div class="strip-val">47</div>
+        <div class="strip-label">Turns</div>
+      </div>
+      <div class="strip-stat">
+        <div class="strip-val">12</div>
+        <div class="strip-label">Pivots</div>
+      </div>
+      <div class="strip-stat">
+        <div class="strip-val">3</div>
+        <div class="strip-label">Commitments</div>
+      </div>
+      <div class="strip-stat health">
+        <div class="strip-val">82</div>
+        <div class="strip-label">Session Health</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="var-badge">Variation 03 — The Dispatch</div>
+<div class="var-nav">
+  <a href="v1-ledger.html">01</a>
+  <a href="v2-fieldnotes.html">02</a>
+  <a href="v3-dispatch.html" class="cur">03</a>
+  <a href="index.html">↑</a>
+</div>
+
+<script>
+function toggleExchange(id) {
+  const exchange = document.getElementById(id);
+  const expand = document.getElementById(id + '-expand');
+  const col = exchange.querySelector('.exchange-col:not(.empty)');
+  const wasActive = col.classList.contains('active');
+
+  // Close all
+  document.querySelectorAll('.exchange-col').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.exchange-expand').forEach(e => e.classList.remove('open'));
+
+  if (!wasActive) {
+    col.classList.add('active');
+    if (expand) expand.classList.add('open');
+  }
+}
+
+function toggleCard(card) {
+  const wasActive = card.classList.contains('active');
+  document.querySelectorAll('.moment-card.active').forEach(c => c.classList.remove('active'));
+  if (!wasActive) card.classList.add('active');
+}
+</script>
+</body>
+</html>
