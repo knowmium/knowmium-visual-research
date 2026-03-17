@@ -297,6 +297,41 @@
     color: #2C2418;
   }
 
+  /* Image gallery strip in cards */
+  .card-gallery {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    background: #e8e0d4;
+    padding: 4px;
+  }
+  .card-gallery img {
+    height: 220px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 2px;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    background: #fff;
+  }
+  .card-gallery img:hover {
+    opacity: 0.9;
+  }
+  .card-gallery::-webkit-scrollbar {
+    height: 4px;
+  }
+  .card-gallery::-webkit-scrollbar-track {
+    background: #e8e0d4;
+  }
+  .card-gallery::-webkit-scrollbar-thumb {
+    background: #c4b8a4;
+    border-radius: 2px;
+  }
+
   /* Span helpers */
   .span-2 { grid-column: span 2; }
   .span-3 { grid-column: span 3; }
@@ -363,6 +398,158 @@
 
   <div class="grid two-col">
     <div class="card">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+    <div class="card-gallery">
+      <img src="samples/violet-toolkit-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/violet-toolkit-spread1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/violet-toolkit-spread2.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/nasa-sp413-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/nasa-sp413-diagram1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/nasa-sp413-habitat1.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/ideo-workshop-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/ideo-workshop-slide1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/ideo-workshop-slide2.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/hundred-things-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/hundred-things-page1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/hundred-things-page2.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/logic22-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/logic22-spread1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/logic22-spread2.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/logic21-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/logic21-spread1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/logic21-spread2.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/logic16-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/logic16-spread1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/logic16-spread2.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/logic6-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/logic6-spread1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/logic6-spread2.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/whr21-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/whr21-chart1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/whr21-chart2.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/dg30-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/dg30-infographic1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/dg30-infographic2.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/dg31-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/dg31-infographic1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/dg31-infographic2.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/x-instructions-page1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/x-instructions-page2.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/uv-modular-page1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/uv-modular-page2.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/uv-modular-page3.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/a-letter-is-page1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/a-letter-is-page2.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/a-letter-is-page3.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/notations21-page1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/notations21-page2.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/notations21-page3.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/photon-page1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/photon-page2.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/photon-page3.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/soviet-maps-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/soviet-maps-symbols1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/soviet-maps-symbols2.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/bliss-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/bliss-symbols1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/bliss-symbols2.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/monocle-tokyo-page1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/monocle-tokyo-page2.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/monocle-tokyo-page3.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/mycelium-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/mycelium-spread1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/mycelium-spread2.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/ornithographies-print1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/ornithographies-print2.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/ornithographies-print3.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/questers-guide-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/questers-guide-spread1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/questers-guide-spread2.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/illimat-luminary-card1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/illimat-luminary-card2.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/illimat-luminary-card3.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/nightforest-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/nightforest-cards1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/nightforest-cards2.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/bird-oracle-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/bird-oracle-spread1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/bird-oracle-spread2.jpg" alt="Sample page" loading="lazy">
+    </div>
+
+      <img src="samples/frog-fall-cover.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/frog-fall-page1.jpg" alt="Sample page" loading="lazy">
+      <img src="samples/frog-fall-page2.jpg" alt="Sample page" loading="lazy">
+    </div>
+
       <img src="moodboard/wes-anderson-palette-1.jpg" alt="Wes Anderson palette — Moonrise Kingdom">
       <div class="card-body">
         <h3>Moonrise Kingdom Palette</h3>
@@ -1076,6 +1263,28 @@
       </div>
     </div>
   </div>
+
+  <h3 style="font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:400; color:#2C2418; margin:48px 0 8px;">Data as Devotional Practice</h3>
+  <p class="section-desc">When systematic recording becomes an act of love. Every day, every city, every cloud &mdash; drawn by hand.</p>
+
+  <div class="grid two-col">
+    <div class="card span-2">
+    <div class="card-gallery">
+      <img src="samples/weather-report-cover.jpg" alt="Weather report cover" loading="lazy">
+      <img src="samples/weather-report-spread1.jpg" alt="Weather report January" loading="lazy">
+      <img src="samples/weather-report-spread2.jpg" alt="Weather report February-March" loading="lazy">
+      <img src="samples/weather-report-spread3.jpg" alt="Weather report spread" loading="lazy">
+    </div>
+      <div class="card-body" style="min-height:200px; background:#FDFBF7; padding:30px;">
+        <h3 style="font-size:1.4rem;">Compte-rendu m&eacute;t&eacute;orologique</h3>
+        <div style="font-size:0.65rem; letter-spacing:0.12em; text-transform:uppercase; color:#B8926A; margin-bottom:12px;">Puigros-Puijener J&eacute;r&ocirc;me &middot; Habeas Corpus &middot; 2013 &middot; 16 pages</div>
+        <p>A hand-drawn meteorological report covering 48 cities worldwide across two full years (2011&ndash;2012). Every single day rendered as a grid cell with hand-drawn weather symbols &mdash; clouds with hatching, rain with diagonal lines, sun as circles &mdash; alongside temperatures. Entirely black ink on white paper, typewriter-style lowercase monospace lettering. <strong>This is data visualization as devotional practice.</strong> The obsessive, patient hand-drawing of systematic data mirrors exactly what Fernwae does: recording the invisible patterns of conversation with the same care a naturalist records the weather. Calendar grid = conversation timeline. Weather symbols = conversation states. 48 cities = 191 panels.</p>
+        <span class="card-tag">Essential &middot; Data as Devotion</span>
+      </div>
+    </div>
+  </div>
+
+
 
   <div class="quote-block" style="margin-top:48px;">
     <p>"A quiet, contemplative journey through a whimsical world, rendered in a delicate and personal style."</p>
