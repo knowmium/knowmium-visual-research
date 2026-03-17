@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fernwae — Visual Mood Board</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #F5F0E8;
+    color: #2C2418;
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 60px 40px 40px;
+    border-bottom: 1px solid #D4C9B5;
+  }
+  .header img.logo {
+    max-width: 320px;
+    margin-bottom: 16px;
+  }
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    font-weight: 400;
+    color: #2C2418;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+  }
+  .header p {
+    font-size: 0.95rem;
+    color: #7A6E5D;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Nav */
+  nav {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 20px 40px;
+    border-bottom: 1px solid #D4C9B5;
+    background: #EDE7DB;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav a {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: #7A6E5D;
+    padding: 6px 14px;
+    border: 1px solid #D4C9B5;
+    border-radius: 20px;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  nav a:hover {
+    background: #2C2418;
+    color: #F5F0E8;
+    border-color: #2C2418;
+  }
+
+  /* Section */
+  .section {
+    padding: 60px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .section-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #B8926A;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 400;
+    color: #2C2418;
+    margin-bottom: 12px;
+  }
+  .section-desc {
+    font-size: 0.9rem;
+    color: #7A6E5D;
+    max-width: 700px;
+    margin-bottom: 40px;
+    line-height: 1.7;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #D4C9B5;
+    margin: 0 40px;
+  }
+
+  /* Masonry-style grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .grid.two-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .grid.four-col {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .card {
+    background: #FDFBF7;
+    border: 1px solid #E2D9CA;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(44, 36, 24, 0.08);
+  }
+  .card img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+  }
+  .card-body {
+    padding: 16px 20px;
+  }
+  .card-body h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 400;
+    color: #2C2418;
+    margin-bottom: 6px;
+  }
+  .card-body p {
+    font-size: 0.8rem;
+    color: #7A6E5D;
+    line-height: 1.5;
+  }
+  .card-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #B8926A;
+    border: 1px solid #D4C9B5;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-top: 8px;
+    font-weight: 500;
+  }
+
+  /* Color palette strip */
+  .palette-strip {
+    display: flex;
+    gap: 0;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 80px;
+    margin-bottom: 24px;
+  }
+  .palette-strip .swatch {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 8px;
+  }
+  .palette-strip .swatch span {
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+  }
+  .palette-strip .swatch.light span {
+    color: rgba(44, 36, 24, 0.5);
+  }
+
+  /* Typography showcase */
+  .type-showcase {
+    background: #FDFBF7;
+    border: 1px solid #E2D9CA;
+    border-radius: 4px;
+    padding: 40px;
+    margin-bottom: 24px;
+  }
+  .type-showcase .serif-sample {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    color: #2C2418;
+    margin-bottom: 8px;
+  }
+  .type-showcase .sans-sample {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    color: #7A6E5D;
+    letter-spacing: 0.04em;
+    font-weight: 300;
+  }
+  .type-showcase .mono-sample {
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    color: #B8926A;
+    margin-top: 12px;
+    letter-spacing: 0.06em;
+  }
+
+  /* Principles list */
+  .principles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 24px;
+  }
+  .principle {
+    background: #FDFBF7;
+    border: 1px solid #E2D9CA;
+    border-radius: 4px;
+    padding: 24px;
+  }
+  .principle h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 400;
+    color: #2C2418;
+    margin-bottom: 8px;
+  }
+  .principle p {
+    font-size: 0.8rem;
+    color: #7A6E5D;
+    line-height: 1.5;
+  }
+
+  /* Full-width image */
+  .full-image {
+    width: 100%;
+    border: 1px solid #E2D9CA;
+    border-radius: 4px;
+    margin-bottom: 24px;
+  }
+
+  /* Quote */
+  .quote-block {
+    background: #FDFBF7;
+    border-left: 3px solid #B8926A;
+    padding: 30px 40px;
+    margin: 40px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .quote-block p {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    color: #2C2418;
+    line-height: 1.6;
+  }
+  .quote-block .attribution {
+    font-family: 'Inter', sans-serif;
+    font-style: normal;
+    font-size: 0.75rem;
+    color: #B8926A;
+    margin-top: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Back link */
+  .back-link {
+    text-align: center;
+    padding: 40px;
+    border-top: 1px solid #D4C9B5;
+  }
+  .back-link a {
+    font-size: 0.8rem;
+    color: #B8926A;
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .back-link a:hover {
+    color: #2C2418;
+  }
+
+  /* Span helpers */
+  .span-2 { grid-column: span 2; }
+  .span-3 { grid-column: span 3; }
+
+  @media (max-width: 900px) {
+    .grid, .grid.four-col, .principles { grid-template-columns: 1fr; }
+    .grid.two-col { grid-template-columns: 1fr; }
+    .span-2, .span-3 { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <img class="logo" src="images/fernwae-logo.png" alt="Fernwae">
+  <h1>Visual Mood Board</h1>
+  <p>The aesthetic register for Fernwae conversation visualization. Warm, editorial, scientific, human.</p>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#palette">Palette</a>
+  <a href="#typography">Typography</a>
+  <a href="#principles">Principles</a>
+  <a href="#wes-anderson">Wes Anderson</a>
+  <a href="#editorial">Editorial</a>
+  <a href="#scientific">Scientific Atlas</a>
+  <a href="#data-as-art">Data as Art</a>
+  <a href="#language-form">Language as Form</a>
+  <a href="#textures">Textures</a>
+  <a href="index.html">Back to Research Board</a>
+</nav>
+
+<!-- 01: COLOR PALETTE -->
+<div class="section" id="palette">
+  <div class="section-label">01 — Color</div>
+  <h2>The Fernwae Palette</h2>
+  <p class="section-desc">Warm, muted, intentional. Cream foundations with gold accents, charcoal type, and selective color for data encoding. Every hue should feel like it belongs in a well-lit library.</p>
+
+  <div class="palette-strip">
+    <div class="swatch light" style="background: #F5F0E8;"><span>#F5F0E8</span></div>
+    <div class="swatch light" style="background: #FDFBF7;"><span>#FDFBF7</span></div>
+    <div class="swatch light" style="background: #EDE7DB;"><span>#EDE7DB</span></div>
+    <div class="swatch light" style="background: #D4C9B5;"><span>#D4C9B5</span></div>
+    <div class="swatch" style="background: #B8926A;"><span>#B8926A</span></div>
+    <div class="swatch" style="background: #7A6E5D;"><span>#7A6E5D</span></div>
+    <div class="swatch" style="background: #2C2418;"><span>#2C2418</span></div>
+  </div>
+
+  <p class="section-desc">Data accent colors — used sparingly for encoding conversation signals:</p>
+  <div class="palette-strip">
+    <div class="swatch" style="background: #C4785B;"><span>Warmth</span></div>
+    <div class="swatch" style="background: #8B6E4E;"><span>Earth</span></div>
+    <div class="swatch" style="background: #6B8F71;"><span>Growth</span></div>
+    <div class="swatch" style="background: #5B7B8C;"><span>Depth</span></div>
+    <div class="swatch" style="background: #9B7B9E;"><span>Tension</span></div>
+    <div class="swatch" style="background: #C49B6A;"><span>Gold</span></div>
+    <div class="swatch" style="background: #A85B5B;"><span>Alert</span></div>
+  </div>
+
+  <div class="grid two-col">
+    <div class="card">
+      <img src="moodboard/wes-anderson-palette-1.jpg" alt="Wes Anderson palette — Moonrise Kingdom">
+      <div class="card-body">
+        <h3>Moonrise Kingdom Palette</h3>
+        <p>Muted sage, dusty rose, warm gold, deep brown. The kind of colors that feel like a memory.</p>
+        <span class="card-tag">Color Reference</span>
+      </div>
+    </div>
+    <div class="card">
+      <img src="moodboard/wes-anderson-palette-3.jpg" alt="Wes Anderson palette — The Darjeeling Limited">
+      <div class="card-body">
+        <h3>The Darjeeling Limited Palette</h3>
+        <p>Warm amber, deep ochre, chocolate brown. Every frame composed like a painting.</p>
+        <span class="card-tag">Color Reference</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- 02: TYPOGRAPHY -->
+<div class="section" id="typography">
+  <div class="section-label">02 — Typography</div>
+  <h2>Type as Character</h2>
+  <p class="section-desc">Serif for headlines and labels — the voice of authority and warmth. Sans-serif for body text — clarity and precision. Monospace for data annotations — the scientist's hand.</p>
+
+  <div class="type-showcase">
+    <div class="serif-sample">Conversations have architecture.</div>
+    <div class="sans-sample">Every pause, every interruption, every shift in tone creates structure. Fernwae makes that structure visible — not as cold data, but as something you can feel.</div>
+    <div class="mono-sample">TURN_LATENCY: 1.2s &nbsp; | &nbsp; SPEAKER_A: 62% &nbsp; | &nbsp; SENTIMENT: +0.34 &nbsp; | &nbsp; TOPIC_SHIFT: T+04:23</div>
+  </div>
+
+  <div class="quote-block">
+    <p>"Eclipse diagrams on jet-black backgrounds with white engraved lines. Constellation maps as dot-and-line networks on aged cream paper. Botanical cross-sections with ruled annotation lines. That's the register. Now apply it to conversations."</p>
+    <div class="attribution">— Fernwae Design Direction</div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- 03: PRINCIPLES -->
+<div class="section" id="principles">
+  <div class="section-label">03 — Principles</div>
+  <h2>Design Principles</h2>
+  <p class="section-desc">Six rules that govern every visual decision in Fernwae.</p>
+
+  <div class="principles">
+    <div class="principle">
+      <h4>Warm, Not Cold</h4>
+      <p>Data visualization doesn't have to feel clinical. Cream backgrounds, serif type, hand-drawn quality. Every screen should feel like opening a beautiful book.</p>
+    </div>
+    <div class="principle">
+      <h4>Precision, Not Clutter</h4>
+      <p>Tufte's principle: maximize the data-ink ratio. Every pixel earns its place. White space is as important as the data it frames.</p>
+    </div>
+    <div class="principle">
+      <h4>Scientific, Not Corporate</h4>
+      <p>The aesthetic of 18th-century astronomy plates, not SaaS dashboards. Engraved lines, not gradient fills. Annotations, not tooltips.</p>
+    </div>
+    <div class="principle">
+      <h4>Human, Not Machine</h4>
+      <p>Organic forms over rigid grids. Conversation flows like rivers, not spreadsheets. The visualization should feel alive.</p>
+    </div>
+    <div class="principle">
+      <h4>Layered, Not Flat</h4>
+      <p>Surface text, emotional undercurrent, cognitive subtext — all visible simultaneously. Like geological strata or a topographic map.</p>
+    </div>
+    <div class="principle">
+      <h4>Editorial, Not Utilitarian</h4>
+      <p>Every screen is a page in a magazine. Typography matters. Spacing matters. The experience of reading the data is as important as the data itself.</p>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- 04: WES ANDERSON -->
+<div class="section" id="wes-anderson">
+  <div class="section-label">04 — Cinematic</div>
+  <h2>The Wes Anderson Register</h2>
+  <p class="section-desc">Symmetry, intentional composition, warm palettes, and the feeling that every element was placed with care. Not whimsy for its own sake — compositional rigor that makes complexity feel approachable.</p>
+
+  <div class="grid two-col">
+    <div class="card">
+      <img src="moodboard/wes-anderson-palette-2.jpg" alt="Wes Anderson — The Royal Tenenbaums">
+      <div class="card-body">
+        <h3>The Royal Tenenbaums</h3>
+        <p>Red, peach, copper, sage, blush. Warm but structured. Every color has a role, like speakers in a conversation.</p>
+        <span class="card-tag">Cinematic Palette</span>
+      </div>
+    </div>
+    <div class="card">
+      <img src="moodboard/monocle-spread.jpg" alt="Monocle Magazine editorial spread">
+      <div class="card-body">
+        <h3>Monocle Magazine</h3>
+        <p>The gold standard for editorial data presentation. Clean typography, generous white space, warm paper stock, bold accent colors used sparingly.</p>
+        <span class="card-tag">Editorial Layout</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- 05: EDITORIAL -->
+<div class="section" id="editorial">
+  <div class="section-label">05 — Editorial Data</div>
+  <h2>Data That Feels Like a Magazine</h2>
+  <p class="section-desc">Nicholas Felton proved that personal data could be beautiful. Giorgia Lupi proved that data could be emotional. Fernwae applies both lessons to conversations.</p>
+
+  <div class="grid">
+    <div class="card">
+      <img src="moodboard/felton-annual-report.jpg" alt="Nicholas Felton Annual Report">
+      <div class="card-body">
+        <h3>Felton Annual Report</h3>
+        <p>Personal data as editorial design. Clean grids, warm colors, serif headlines. The template for making data feel intimate rather than institutional.</p>
+        <span class="card-tag">Role Model</span>
+      </div>
+    </div>
+    <div class="card">
+      <img src="moodboard/felton-where-map.jpg" alt="Felton — Where map">
+      <div class="card-body">
+        <h3>Felton — Location Data</h3>
+        <p>Red accent on white. Minimal. Every data point placed with intention. This is how conversation geography should feel.</p>
+        <span class="card-tag">Role Model</span>
+      </div>
+    </div>
+    <div class="card">
+      <img src="moodboard/felton-2014.jpg" alt="Felton 2014 Annual Report detail">
+      <div class="card-body">
+        <h3>Felton — 2014 Detail</h3>
+        <p>The final annual report. Conversation metadata rendered as beautiful typography. Numbers that you actually want to read.</p>
+        <span class="card-tag">Role Model</span>
+      </div>
+    </div>
+    <div class="card span-2">
+      <img src="moodboard/giorgia-lupi-data-sketch.jpg" alt="Giorgia Lupi data sketch">
+      <div class="card-body">
+        <h3>Giorgia Lupi — Data Sketches</h3>
+        <p>Hand-drawn quality in data visualization. Organic, warm, imperfect in the best way. Data that feels like it was made by a human, not a machine. This is the emotional register Fernwae aims for.</p>
+        <span class="card-tag">Emotional Data</span>
+      </div>
+    </div>
+    <div class="card">
+      <img src="moodboard/hand-drawn-data-viz.jpg" alt="Hand-drawn data visualizations">
+      <div class="card-body">
+        <h3>Sketching with Data</h3>
+        <p>The process of making data visible by hand first. Pen on paper. The thinking made visible before the pixels.</p>
+        <span class="card-tag">Process</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- 06: SCIENTIFIC ATLAS -->
+<div class="section" id="scientific">
+  <div class="section-label">06 — Scientific Atlas</div>
+  <h2>The Engraver's Hand</h2>
+  <p class="section-desc">18th-century astronomy plates. Eclipse diagrams. Constellation maps on aged cream paper. Botanical cross-sections with ruled annotation lines. This is the visual DNA of Fernwae — precision rendered with beauty.</p>
+
+  <div class="grid">
+    <div class="card">
+      <img src="moodboard/eclipse-diagram-1737.jpg" alt="Solar Eclipse Diagram, 1737">
+      <div class="card-body">
+        <h3>Solar Eclipse — 1737</h3>
+        <p>Penumbra, disk, shadow. Complex astronomical data rendered with engraved precision on cream paper. This is how conversation dynamics should feel.</p>
+        <span class="card-tag">North Star</span>
+      </div>
+    </div>
+    <div class="card">
+      <img src="moodboard/eclipse-diagram-detail.jpg" alt="Eclipse diagram detail">
+      <div class="card-body">
+        <h3>Eclipse Detail</h3>
+        <p>Ruled lines, hand-lettered annotations, concentric circles showing phases. The visual language of making invisible forces visible.</p>
+        <span class="card-tag">North Star</span>
+      </div>
+    </div>
+    <div class="card">
+      <img src="moodboard/constellation-map-vintage.jpg" alt="Vintage constellation map">
+      <div class="card-body">
+        <h3>Constellation Map</h3>
+        <p>Dot-and-line networks on deep blue. Named nodes connected by invisible relationships. This IS a conversation map — just applied to stars instead of speakers.</p>
+        <span class="card-tag">Metaphor</span>
+      </div>
+    </div>
+    <div class="card">
+      <img src="moodboard/constellation-poles-vintage.jpg" alt="Constellations Round the Poles">
+      <div class="card-body">
+        <h3>Constellations Round the Poles</h3>
+        <p>Dual-hemisphere view. Two perspectives on the same system. Like viewing a conversation from two speakers' points of view simultaneously.</p>
+        <span class="card-tag">Metaphor</span>
+      </div>
+    </div>
+    <div class="card">
+      <img src="moodboard/botanical-engraving.jpg" alt="Vintage botanical engraving">
+      <div class="card-body">
+        <h3>Botanical Engraving</h3>
+        <p>Organic forms rendered with scientific precision. Branching structures, delicate line work, annotated labels. The visual language for mapping how ideas branch and grow in conversation.</p>
+        <span class="card-tag">Organic Structure</span>
+      </div>
+    </div>
+    <div class="card">
+      <img src="moodboard/vintage-scientific-optics.jpg" alt="Vintage scientific optics illustration">
+      <div class="card-body">
+        <h3>Scientific Optics</h3>
+        <p>Light paths, refraction, lenses. Making invisible forces visible through precise illustration. The metaphor for how Fernwae reveals the hidden dynamics of conversation.</p>
+        <span class="card-tag">Metaphor</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- 07: DATA AS ART -->
+<div class="section" id="data-as-art">
+  <div class="section-label">07 — Data as Art</div>
+  <h2>When Data Becomes Beautiful</h2>
+  <p class="section-desc">Krisztina Szucs's timeline triangles. Flowing Data's mortality visualization. The Information is Beautiful Awards. Proof that rigorous data can also be emotionally moving.</p>
+
+  <div class="grid two-col">
+    <div class="card">
+      <img src="moodboard/szucs-timeline-triangles.png" alt="Krisztina Szucs — Timeline Triangles">
+      <div class="card-body">
+        <h3>Krisztina Szucs — Timeline Triangles</h3>
+        <p>Color gradients encoding momentum shifts over time. Temporal dynamics made visible through geometric precision. The craft here — color transitions, data density, compositional balance — translates directly to mapping conversation momentum.</p>
+        <span class="card-tag">Design Craft</span>
+      </div>
+    </div>
+    <div class="card">
+      <img src="moodboard/szucs-portfolio.png" alt="Krisztina Szucs portfolio">
+      <div class="card-body">
+        <h3>Szucs — Portfolio</h3>
+        <p>Consistent visual language across different datasets. Warm backgrounds, precise geometry, editorial typography. Every piece feels like it belongs in the same publication.</p>
+        <span class="card-tag">Design Craft</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- 08: LANGUAGE AS FORM -->
+<div class="section" id="language-form">
+  <div class="section-label">08 — Language as Form</div>
+  <h2>When Words Become Shape</h2>
+  <p class="section-desc">Stefanie Posavec's Writing Without Words is the single most directly relevant precedent for Fernwae. She proved that the structure of language — sentence length, rhythm, word choice — can be rendered as organic, beautiful visual form.</p>
+
+  <div class="grid">
+    <div class="card span-2">
+      <img src="moodboard/posavec-writing-without-words.png" alt="Stefanie Posavec — Writing Without Words">
+      <div class="card-body">
+        <h3>Posavec — Writing Without Words</h3>
+        <p>Sentence structure as branching organic form. Color-coded by theme, sized by length. This is the closest existing work to what Fernwae is building — but applied to books rather than live conversation.</p>
+        <span class="card-tag">Key Precedent</span>
+      </div>
+    </div>
+    <div class="card">
+      <img src="moodboard/posavec-sentence-flowers.jpg" alt="Posavec — Sentence Flowers">
+      <div class="card-body">
+        <h3>Posavec — Sentence Flowers</h3>
+        <p>Each sentence becomes a flower. Petals represent clauses. Color represents theme. Language rendered as botanical illustration. The intersection of scientific precision and organic beauty.</p>
+        <span class="card-tag">Key Precedent</span>
+      </div>
+    </div>
+    <div class="card span-3">
+      <img src="moodboard/posavec-book-spread.jpg" alt="Posavec — Book spread">
+      <div class="card-body">
+        <h3>Posavec — Published Spread</h3>
+        <p>The full editorial treatment. Data visualization as a physical book you want to hold. Cream paper, precise printing, generous margins. This is the production quality Fernwae aspires to.</p>
+        <span class="card-tag">Production Quality</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- 09: TEXTURES -->
+<div class="section" id="textures">
+  <div class="section-label">09 — Textures &amp; Materials</div>
+  <h2>The Feel of the Thing</h2>
+  <p class="section-desc">Aged paper. Topographic contours. Engraved lines. The visual textures that give Fernwae its warmth and depth — the difference between a screen and an experience.</p>
+
+  <div class="grid">
+    <div class="card">
+      <img src="moodboard/topo-map-vintage.jpg" alt="Vintage topographic map">
+      <div class="card-body">
+        <h3>Topographic Contours</h3>
+        <p>Conversation as terrain. High points of agreement, valleys of tension, ridgelines of topic shifts. The topographic map is the perfect metaphor for conversation dynamics.</p>
+        <span class="card-tag">Metaphor</span>
+      </div>
+    </div>
+    <div class="card">
+      <img src="moodboard/cream-ivory-palette.jpg" alt="Cream and ivory paper swatches">
+      <div class="card-body">
+        <h3>Paper Stock</h3>
+        <p>Not white. Never pure white. Cream, ivory, parchment, linen. The background should feel like a surface you could touch — warm, textured, alive.</p>
+        <span class="card-tag">Material</span>
+      </div>
+    </div>
+    <div class="card">
+      <img src="moodboard/dialogue-mapping-concepts.jpg" alt="Fernwae dialogue mapping concepts">
+      <div class="card-body">
+        <h3>Fernwae Concept Sketches</h3>
+        <p>The original dialogue mapping interface concepts. Cognitive Subtext Map, Emotional Grammar Map, Dynamic Argument Flow, Cognitive Resonance Waveform. The vision that started it all.</p>
+        <span class="card-tag">Fernwae Concept</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="back-link">
+  <a href="index.html">&larr; Back to Research Board</a>
+</div>
+
+</body>
+</html>
